@@ -49,7 +49,7 @@ impl Player {
 }
 
 
-pub fn movement(
+pub fn movement_and_camera(
     k: Res<Input<KeyCode>>,
     time: Res<Time>,
     mut player: Query<&mut Transform, With<Player>>,

@@ -35,28 +35,32 @@ pub struct Boss {
 pub fn aim_at_player(
     mut boss_q: Query<(&mut Transform, &Boss), Without<Player>>,
     player_q: Query<&Transform, With<Player>>,
-    time: Res<Time>
+    t: Res<Time>
 ) {
     let pt = player_q.single().translation.truncate();
     for (mut bt, boss) in &mut boss_q {
-        let b2p = (pt - bt.translation.truncate()).normalize();
+        let b2p: Vec2 = (pt - bt.translation.truncate()).normalize();
+        let bt_cp = bt.clone();
+
         match boss.pattern {
             AimPattern::Snap => bt.rotation = Quat::from_rotation_arc(Vec3::Y, b2p.extend(0.)),
-            AimPattern::Rotate => {
-                let b_forward = (bt.rotation * Vec3::Y).truncate();
-                let forward_dot_player = b_forward.dot(b2p);
-                if (forward_dot_player - 1.0).abs() < f32::EPSILON { continue; }
-                let b_right = (bt.rotation * Vec3::X).truncate();
-                let right_dot_player = b_right.dot(b2p);
-                let rotation_sign = -f32::copysign(1.0, right_dot_player);
-                let max_angle = forward_dot_player.clamp(-1.0, 1.0).acos(); 
-                let rotation_angle = rotation_sign * (f32::to_radians(90.0) 
-                    * time.delta_seconds()).min(max_angle);
-                bt.rotate_z(rotation_angle);
-            }
+            AimPattern::Rotate => bt.rotate_z(get_rotation_angle(b2p, bt_cp, t.delta_seconds())),
         }
     }
 }
+
+#[inline]
+fn get_rotation_angle(b2p: Vec2, bt: Transform, t: f32) -> f32 {
+    let b_forward = (bt.rotation * Vec3::Y).truncate();
+    let forward_dot_player = b_forward.dot(b2p);
+    if (forward_dot_player - 1.0).abs() < f32::EPSILON { return 0.0;}
+    let b_right = (bt.rotation * Vec3::X).truncate();
+    let right_dot_player = b_right.dot(b2p);
+    let rotation_sign = -f32::copysign(1.0, right_dot_player);
+    let max_angle = forward_dot_player.clamp(-1.0, 1.0).acos(); 
+    return rotation_sign * (f32::to_radians(90.0) * t).min(max_angle);
+}
+
 
 pub fn attack_player(
     mut commands: Commands, 

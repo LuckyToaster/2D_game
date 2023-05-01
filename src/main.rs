@@ -1,6 +1,5 @@
 #![allow(dead_code, unused_imports)]
 mod bullet;
-mod util;
 mod gamedata;
 mod player;
 mod boss;
@@ -16,7 +15,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .init_resource::<gamedata::GameData>()
         .add_startup_system(setup)
-        .add_system(player::movement)
+        .add_system(player::movement_and_camera)
         .add_system(player::shoot)
         .add_system(boss::aim_at_player)
         .add_system(bullet::handle)

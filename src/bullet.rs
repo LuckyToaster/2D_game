@@ -47,12 +47,12 @@ pub fn handle(
     enemy: Query<(Entity, &Transform), With<Boss>>,
     mut bullets: Query<(Entity, &mut Transform, &Bullet), (Without<Player>, Without<Boss>)>, // shitty query, cant do a 'With<Bullet>' for some reason 
     data: Res<GameData>,
-    time: Res<Time>
+    t: Res<Time>
 ) {
     for (ee, mut bt, b) in &mut bullets {
         let base_direction = Vec3::new(0.0, 1.0, 0.0); 
         let rotated_direction = bt.rotation.mul_vec3(base_direction);
-        let displacement = rotated_direction * b.vel * time.delta_seconds();
+        let displacement = rotated_direction * b.vel * t.delta_seconds();
         bt.translation.x += displacement.x;
         bt.translation.y += displacement.y;
 
