@@ -1,6 +1,6 @@
 use crate::player::Player;
 use crate::gamedata::GameData;
-use crate::bullet::{Bullet, BulletSource};
+use crate::bullets::{Bullet, BulletSource};
 use bevy::{
     utils::default,
     transform::components::Transform,
@@ -20,7 +20,7 @@ use bevy::{
 
 #[derive(Component)]
 pub enum AimPattern {
-    Rotate, Snap
+    Rotate, Snap, Spiral,
 }
 
 #[derive(Component)]
@@ -45,6 +45,7 @@ pub fn aim_at_player(
         match boss.pattern {
             AimPattern::Snap => bt.rotation = Quat::from_rotation_arc(Vec3::Y, b2p.extend(0.)),
             AimPattern::Rotate => bt.rotate_z(get_rotation_angle(b2p, bt_cp, t.delta_seconds())),
+            AimPattern::Spiral => bt.rotate_z(0.20),
         }
     }
 }

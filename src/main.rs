@@ -1,5 +1,5 @@
 #![allow(dead_code, unused_imports)]
-mod bullet;
+mod bullets;
 mod gamedata;
 mod player;
 mod boss;
@@ -17,8 +17,8 @@ fn main() {
         .add_startup_system(setup)
         .add_system(player::movement_and_camera)
         .add_system(player::shoot)
+        .add_system(bullets::handle)
         .add_system(boss::aim_at_player)
-        .add_system(bullet::handle)
         .add_system(boss::attack_player)
         .run();
 }
@@ -52,9 +52,10 @@ fn setup(
         player::Player::default()
     ));
 
-    let music = asset_server.load("9999.ogg");
-    audio.play(music);
+    //let music = asset_server.load("9999.ogg");
+    //audio.play(music);
 
+    /*
     commands.spawn((
         SpriteBundle {
             texture: asset_server.load("succubus.png"),
@@ -71,6 +72,7 @@ fn setup(
             )
         }
     ));
+    */
 
     commands.spawn((
         SpriteBundle {
@@ -82,11 +84,11 @@ fn setup(
             ..default()
         },
         boss::Boss { 
-            pattern: boss::AimPattern::Rotate,
+            pattern: boss::AimPattern::Spiral,
             bullet_size: 10.0,
             bullet_vel: 200.0,
             timer: Timer::new(
-                Duration::from_millis(333), 
+                Duration::from_millis(50), 
                 TimerMode::Repeating
             )
         }

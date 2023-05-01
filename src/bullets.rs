@@ -28,19 +28,6 @@ pub struct Bullet {
 }
 
 
-/*pub fn update_bullets(
-    mut bullets: Query<(&mut Transform, &Bullet)>, 
-    time: Res<Time>
-) {
-    for (mut transform, b) in &mut bullets {
-        let base_direction = Vec3::new(0.0, 1.0, 0.0); 
-        let rotated_direction = transform.rotation.mul_vec3(base_direction);
-        let displacement = rotated_direction * b.vel * time.delta_seconds();
-        transform.translation.x += displacement.x;
-        transform.translation.y += displacement.y;
-    }
-}*/
-
 pub fn handle(
     mut commands: Commands,
     player: Query<(Entity, &Transform), With<Player>>,
@@ -50,19 +37,22 @@ pub fn handle(
     t: Res<Time>
 ) {
     for (ee, mut bt, b) in &mut bullets {
+        // update
         let base_direction = Vec3::new(0.0, 1.0, 0.0); 
         let rotated_direction = bt.rotation.mul_vec3(base_direction);
         let displacement = rotated_direction * b.vel * t.delta_seconds();
         bt.translation.x += displacement.x;
         bt.translation.y += displacement.y;
 
+        // drop when too far away
         let x = bt.translation.x;
         let y = bt.translation.y;
 
         if x >= data.width || x <= 0.0 || y >= data.height || y <= 0.0 {
             commands.entity(ee).despawn();
         }
-        
+
+        // collision detection
         match b.source {
             BulletSource::Enemy => {
                 if let Some((pe, pt)) = player.iter().next() {
