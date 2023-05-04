@@ -1,20 +1,7 @@
-//#![allow(dead_code)]
 use crate::gamedata::GameData;
 use crate::boss::Boss;
 use crate::player::Player;
-
-use bevy::{
-    transform::components::Transform,
-    render::color::Color,
-    time::Time,
-    math::{Vec2, Vec3},
-    ecs::{
-        entity::Entity,
-        component::Component,
-        query::{With, Without},
-        system::{Query, Res, Commands},
-    },
-};
+use bevy::prelude::*;
 
 pub enum BulletSource {
     Enemy, Player
@@ -29,12 +16,12 @@ pub struct Bullet {
 
 
 pub fn handle(
-    mut commands: Commands,
-    player: Query<(Entity, &Transform), With<Player>>,
-    enemy: Query<(Entity, &Transform), With<Boss>>,
-    mut bullets: Query<(Entity, &mut Transform, &Bullet), (Without<Player>, Without<Boss>)>, // shitty query, cant do a 'With<Bullet>' for some reason 
+    t: Res<Time>,
     data: Res<GameData>,
-    t: Res<Time>
+    mut commands: Commands,
+    enemy: Query<(Entity, &Transform), With<Boss>>,
+    player: Query<(Entity, &Transform), With<Player>>,
+    mut bullets: Query<(Entity, &mut Transform, &Bullet), (Without<Player>, Without<Boss>)>
 ) {
     for (ee, mut bt, b) in &mut bullets {
         // update
@@ -62,7 +49,6 @@ pub fn handle(
                     }
                 }
             },
-
             BulletSource::Player => {
                 if let Some((ee, et)) = enemy.iter().next() {
                     let distance = bt.translation.distance(et.translation);
