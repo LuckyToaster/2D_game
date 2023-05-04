@@ -31,11 +31,11 @@ pub fn handle(
         bt.translation.x += displacement.x;
         bt.translation.y += displacement.y;
 
-        // drop when too far away
-        let x = bt.translation.x;
-        let y = bt.translation.y;
+        // drop when outside_bounds
+        let outside_width_bounds = bt.translation.x >= data.width || bt.translation.x <= -data.width;
+        let outside_height_bounds = bt.translation.y >= data.height || bt.translation.y <= -data.height;
 
-        if x >= data.width || x <= 0.0 || y >= data.height || y <= 0.0 {
+        if outside_width_bounds || outside_height_bounds {
             commands.entity(ee).despawn();
         }
 
