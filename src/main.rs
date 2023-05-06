@@ -5,6 +5,7 @@ use bevy::prelude::*;
 
 mod gamedata;
 mod bullets;
+mod health;
 mod player;
 mod boss;
 mod ui;
@@ -21,12 +22,13 @@ fn main() {
         .add_startup_system(boss::spawn)
 
         .add_system(ui::fps)
+        .add_system(health::handle)
         .add_system(bullets::handle)
         .add_system(player::handle_movement_and_camera)
         .add_system(player::animate)
         .add_system(player::shoot)
         .add_system(boss::aim_at_player)
-        .add_system(boss::attack_player)
+        .add_system(boss::shoot_player)
         .run();
 }
 

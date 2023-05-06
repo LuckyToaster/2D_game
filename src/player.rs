@@ -1,3 +1,4 @@
+use crate::health::Health;
 use bevy::{
     prelude::*,
     utils::Duration,
@@ -76,7 +77,8 @@ pub fn spawn_player_and_camera(
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     commands.spawn((
-        crate::player::Player::default(),
+        Player::default(),
+        Health(100),
         crate::player::AnimationIndices { first: 84, last: 88 },
         crate::player::AnimationTimer(
             Timer::from_seconds(
@@ -161,6 +163,7 @@ pub fn shoot(
                 crate::bullets::Bullet { 
                     vel: p.bullet_vel, 
                     size: p.bullet_size,
+                    damage: 10,
                     source: crate::bullets::BulletSource::Player
                 },
             ));      

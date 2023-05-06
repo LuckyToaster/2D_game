@@ -1,6 +1,7 @@
 #![allow(unused_imports)]
 use crate::bullets::{Bullet, BulletSource};
 use crate::player::Player;
+use crate::health::Health;
 use bevy::{
     prelude::*,
     utils::Duration,
@@ -59,6 +60,7 @@ pub fn spawn(
             transform: Transform::from_scale(Vec3::splat(3.0)),
             ..default()
         },
+        Health(100),
         Boss {
             guns: vec![
                 Gun { 
@@ -107,22 +109,26 @@ pub fn aim_at_player(
     player_q: Query<&Transform, With<Player>>,
     t: Res<Time>
 ) {
-    let pt = player_q.single().translation.truncate();
-    for (bt, mut boss) in &mut boss_q {
-        let b2p: Vec2 = (pt - bt.translation.truncate()).normalize();
-        let bt_cp = bt.clone();
-        for gun in boss.guns.iter_mut() {
-            match gun.pattern {
-                AimPattern::Snap => gun.rotation = Quat::from_rotation_arc(Vec3::Y, b2p.extend(0.)),
-                AimPattern::Rotate => gun.rotation *= Quat::from_rotation_z(get_rotation_angle(b2p, bt_cp, t.delta_seconds())),
-                AimPattern::Spiral => gun.rotation *= Quat::from_rotation_z(0.20)
+    //let pt = player_q.single().translation.truncate();
+
+    if let Ok(transform) = player_q.get_single() {
+        let pt = transform.translation.truncate();
+        for (bt, mut boss) in &mut boss_q {
+            let b2p: Vec2 = (pt - bt.translation.truncate()).normalize();
+            let bt_cp = bt.clone();
+            for gun in boss.guns.iter_mut() {
+                match gun.pattern {
+                    AimPattern::Snap => gun.rotation = Quat::from_rotation_arc(Vec3::Y, b2p.extend(0.)),
+                    AimPattern::Rotate => gun.rotation *= Quat::from_rotation_z(get_rotation_angle(b2p, bt_cp, t.delta_seconds())),
+                    AimPattern::Spiral => gun.rotation *= Quat::from_rotation_z(0.20)
+                }
             }
         }
     }
 }
 
 
-pub fn attack_player(
+pub fn shoot_player(
     mut commands: Commands, 
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -147,6 +153,7 @@ pub fn attack_player(
                     Bullet { 
                         vel: gun.bullet_vel, 
                         size: gun.bullet_size,
+                        damage: 10,
                         source: BulletSource::Enemy
                     },
                 ));      
