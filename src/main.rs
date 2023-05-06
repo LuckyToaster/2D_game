@@ -18,10 +18,12 @@ fn main() {
         .init_resource::<gamedata::GameData>()
 
         .add_startup_system(player::spawn_player_and_camera)
-        .add_startup_system(ui::spawn_fps_text)
+        .add_startup_system(ui::spawn_ui)
         .add_startup_system(boss::spawn)
 
-        .add_system(ui::fps)
+        .add_system(bevy::window::close_on_esc)
+        .add_system(health::quit_on_player_death)
+        .add_system(ui::update)
         .add_system(health::handle)
         .add_system(bullets::handle)
         .add_system(player::handle_movement_and_camera)

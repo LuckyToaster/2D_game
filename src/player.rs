@@ -78,7 +78,7 @@ pub fn spawn_player_and_camera(
 
     commands.spawn((
         Player::default(),
-        Health(100),
+        Health(1000),
         crate::player::AnimationIndices { first: 84, last: 88 },
         crate::player::AnimationTimer(
             Timer::from_seconds(
@@ -151,7 +151,6 @@ pub fn shoot(
             commands.spawn((
                 MaterialMesh2dBundle {
                     mesh: meshes.add(Circle::new(p.bullet_size).into()).into(),
-                    //material: materials.add(ColorMaterial::from(Color::GREEN)),
                     material: materials.add(ColorMaterial::from(Color::rgb(6.25, 9.4, 9.1))),
                     transform: Transform {
                         translation: pt.translation,
