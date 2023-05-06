@@ -79,7 +79,6 @@ pub fn spawn(
                     bullet_size: 8.0,
                     bullet_vel: 300.0,
                     color: Color::rgb(7.5, 0.0, 7.5),
-                    //rotation: Quat::from_xyzw(1.0, 0.0, 0.0, 0.0), 
                     rotation: Quat::IDENTITY,
                     timer: Timer::new(
                         Duration::from_millis(50), 
@@ -91,7 +90,6 @@ pub fn spawn(
                     bullet_size: 20.0,
                     bullet_vel: 150.0,
                     color: Color::rgb(1.0, 0.75, 5.5),
-                    //rotation: Quat::from_xyzw(1.0, 0.0, 0.0, 0.0), 
                     rotation: Quat::default(),
                     timer: Timer::new(
                         Duration::from_millis(150), 

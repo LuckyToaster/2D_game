@@ -22,7 +22,7 @@ pub fn handle(
     data: Res<GameData>,
     mut commands: Commands,
     mut boss_query: Query<(&Transform, &mut Health), With<Boss>>,
-    mut player_query: Query<(&Transform, &mut Health), With<Player>>,
+    mut player_query: Query<(&Transform, &mut Health), (With<Player>, Without<Boss>)>,
     mut bullets: Query<(Entity, &mut Transform, &Bullet), (Without<Player>, Without<Boss>)>
 ) {
 

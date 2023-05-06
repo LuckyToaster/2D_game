@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Component, PartialEq, PartialOrd)]
+#[derive(Component)]
 pub struct Health(pub i32);
 
 pub fn handle(
