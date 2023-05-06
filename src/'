@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Resource)]
+#[derive(Resource, Default)]
 pub struct GameData {
     pub dt: f32,
     pub width: f32,
@@ -10,8 +10,8 @@ pub struct GameData {
 
 // so deriving works but 'impl Default for GameData' doesn't like arguments
 
-impl Default for GameData {
-    fn default(/*asset_server: Res<AssetServer>*/) -> GameData {
+impl GameData {
+    fn default(asset_server: Res<AssetServer>) -> GameData {
         GameData {
             dt: 1.0 / 240.0,
             width: 1200.0,

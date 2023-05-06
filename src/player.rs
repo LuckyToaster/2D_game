@@ -10,8 +10,8 @@ use bevy::{
 };
 
 pub const SIZE: f32 = 20.0;
-pub const SPEED: f32 = 300.0;
-pub const ROTATION_SPEED: f32 = 5.0;
+pub const SPEED: f32 = 175.0;
+pub const ROTATION_SPEED: f32 = 3.5;
 
 #[derive(Component)]
 pub struct PlayerCamera;
@@ -87,7 +87,7 @@ pub fn spawn_player_and_camera(
         SpriteSheetBundle {
             texture_atlas: texture_atlas_handle,
             sprite: TextureAtlasSprite::new(84), // pass in first animation index
-            transform: Transform::from_scale(Vec3::splat(6.0)),
+            transform: Transform::from_scale(Vec3::splat(3.0)),
             ..default()
         },
     ));
