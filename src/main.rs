@@ -8,6 +8,7 @@ mod bullets;
 mod health;
 mod player;
 mod boss;
+mod gun;
 mod ui;
 
 fn main() {
@@ -25,12 +26,12 @@ fn main() {
         .add_system(health::quit_on_player_death)
         .add_system(ui::update)
         .add_system(health::handle)
-        .add_system(bullets::handle)
         .add_system(player::handle_movement_and_camera)
         .add_system(player::animate)
         .add_system(player::shoot)
         .add_system(boss::aim_at_player)
         .add_system(boss::shoot_player)
+        .add_system(bullets::handle)
         .run();
 }
 

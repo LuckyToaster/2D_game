@@ -17,13 +17,18 @@ pub struct Bullet {
 }
 
 
+// get the player and boss size from gamedata and keep the old query
 pub fn handle(
     t: Res<Time>,
     data: Res<GameData>,
     mut commands: Commands,
-    mut boss_query: Query<(&Transform, &mut Health), With<Boss>>,
-    mut player_query: Query<(&Transform, &mut Health), (With<Player>, Without<Boss>)>,
-    mut bullets: Query<(Entity, &mut Transform, &Bullet), (Without<Player>, Without<Boss>)>
+    mut bullets: Query<(Entity, &mut Transform, &Bullet)>,
+    //mut player_query: Query<(&Transform, &mut Health), Without<Boss>>,
+    //mut boss_query: Query<(&Transform, &mut Health), Without<Player>>
+    mut query: ParamSet<(
+        Query<(&Transform, &mut Health), Without<Boss>>,
+        Query<(&Transform, &mut Health), Without<Player>>
+    )>,
 ) {
 
     for (bullet_entity, mut bt, bullet) in &mut bullets {
@@ -45,24 +50,29 @@ pub fn handle(
         // collision detection
         match bullet.source {
             BulletSource::Enemy => {
-                if let Ok((transform, mut health)) = player_query.get_single_mut() {
+                if let Ok((transform, mut health)) = query.p0().get_single_mut() {
                     let distance = bt.translation.distance(transform.translation);
-                    if distance <= bullet.size + 10.0 { 
+                    // in here, the size of the player and boss should be obtained from their
+                    // transforms fuck, not the 'gamedata object' 
+                    if distance <= bullet.size + data.player_size { 
                         health.0 -= bullet.damage;
+                        commands.entity(bullet_entity).despawn();
                     }
                 }
             },
             BulletSource::Player => {
-                for (transform, mut health) in &mut boss_query {
+                for (transform, mut health) in &mut query.p1() {
                     let distance = bt.translation.distance(transform.translation);
-                    if distance <= bullet.size + 10.0 {
+                    if distance <= bullet.size + transform.scale.x * data.scaling as f32 {
                         health.0 -= bullet.damage;
+                        commands.entity(bullet_entity).despawn();
                     }
                 }
             }
         }
     }
 }
+
 
 /*pub fn handle(
     t: Res<Time>,

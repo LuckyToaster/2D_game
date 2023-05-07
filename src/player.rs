@@ -1,4 +1,5 @@
 use crate::health::Health;
+use crate::gamedata::GameData;
 use bevy::{
     prelude::*,
     utils::Duration,
@@ -28,27 +29,18 @@ pub struct AnimationIndices {
 
 #[derive(Component)]
 pub struct Player {
+    //pub speed: f32,
+    //pub size: f32,
+    //pub rotation_speed: f32,
     pub bullet_size: f32,
     pub bullet_vel: f32,
     pub shooting_timer: Timer,
 }
 
-impl Player {
-    pub fn default() -> Self {
-        Player {
-            bullet_size: 2.0,
-            bullet_vel: 400.0,
-            shooting_timer: Timer::new(
-                Duration::from_millis(250), 
-                TimerMode::Repeating
-            )
-        }
-    }
-}
-
 
 pub fn spawn_player_and_camera( 
     mut commands: Commands,
+    gamedata: Res<GameData>,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
@@ -77,8 +69,7 @@ pub fn spawn_player_and_camera(
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     commands.spawn((
-        Player::default(),
-        Health(1000),
+        Health(30),
         crate::player::AnimationIndices { first: 84, last: 88 },
         crate::player::AnimationTimer(
             Timer::from_seconds(
@@ -92,6 +83,17 @@ pub fn spawn_player_and_camera(
             transform: Transform::from_scale(Vec3::splat(3.0)),
             ..default()
         },
+        Player {
+            //speed: 150.0,
+            //size: (8 * gamedata.scaling) as f32,
+            //rotation_speed: 3.5,
+            bullet_size: 2.0,
+            bullet_vel: 400.0,
+            shooting_timer: Timer::new(
+                Duration::from_millis(250), 
+                TimerMode::Repeating
+            )
+        }
     ));
 }
 
@@ -103,8 +105,11 @@ pub fn animate(
     for (indices, mut timer, mut sprite) in &mut query {
         timer.tick(time.delta());
         if timer.just_finished() {
-            sprite.index = if sprite.index == indices.last { indices.first } 
-                else { sprite.index + 1 };
+            sprite.index = if sprite.index == indices.last { 
+                indices.first 
+            } else { 
+                sprite.index + 1 
+            };
         }
     }
 }

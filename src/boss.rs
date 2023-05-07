@@ -2,6 +2,8 @@
 use crate::bullets::{Bullet, BulletSource};
 use crate::player::Player;
 use crate::health::Health;
+use crate::gamedata::GameData;
+use crate::gun::{Gun, AimPattern};
 use bevy::{
     prelude::*,
     utils::Duration,
@@ -9,12 +11,12 @@ use bevy::{
     sprite::{SpriteBundle, MaterialMesh2dBundle, ColorMaterial},
 };
 
-#[derive(Component)]
+/*#[derive(Component)]
 pub enum AimPattern {
     Rotate, Snap, Spiral,
-}
+}*/
 
-#[derive(Component)]
+/*#[derive(Component)]
 pub struct Gun {
     pub pattern: AimPattern,
     pub bullet_size: f32,
@@ -22,15 +24,17 @@ pub struct Gun {
     pub color: Color,
     pub rotation: Quat,
     pub timer: Timer
-}
+}*/
 
 #[derive(Component)]
 pub struct Boss {
     pub guns: Vec<Gun>,
+    pub size: f32,
 }
 
 
 pub fn spawn(
+    data: Res<GameData>,
     mut commands: Commands, 
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
@@ -47,6 +51,7 @@ pub fn spawn(
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     commands.spawn((
+        Health(100),
         crate::player::AnimationIndices { first: 84, last: 88 },
         crate::player::AnimationTimer(
             Timer::from_seconds(
@@ -57,27 +62,22 @@ pub fn spawn(
         SpriteSheetBundle {
             texture_atlas: texture_atlas_handle,
             sprite: TextureAtlasSprite::new(84), 
-            transform: Transform::from_scale(Vec3::splat(3.0)),
+            //transform: Transform::from_scale(Vec3::splat(3.0)),
+            transform: Transform {
+                translation: Vec3::new(100.0, 100.0, 0.0), 
+                rotation: Quat::default(), 
+                scale: Vec3::splat(3.0),
+            },
             ..default()
         },
-        Health(100),
         Boss {
+            size: (8 * data.scaling) as f32,
             guns: vec![
-                Gun { 
-                    pattern: AimPattern::Snap,
-                    bullet_size: 5.0,
-                    bullet_vel: 200.0,
-                    color: Color::rgb(5.5, 1.0, 9.5),
-                    rotation: Quat::NAN,
-                    timer: Timer::new(
-                        Duration::from_millis(200), 
-                        TimerMode::Repeating
-                    )
-                },
                 Gun { 
                     pattern: AimPattern::Spiral,
                     bullet_size: 8.0,
-                    bullet_vel: 300.0,
+                    bullet_vel: 275.0,
+                    bullet_damage: 15,
                     color: Color::rgb(7.5, 0.0, 7.5),
                     rotation: Quat::IDENTITY,
                     timer: Timer::new(
@@ -86,9 +86,22 @@ pub fn spawn(
                     )
                 },
                 Gun { 
+                    pattern: AimPattern::Snap,
+                    bullet_size: 5.0,
+                    bullet_vel: 175.0,
+                    bullet_damage: 10,
+                    color: Color::rgb(5.5, 1.0, 9.5),
+                    rotation: Quat::NAN,
+                    timer: Timer::new(
+                        Duration::from_millis(200), 
+                        TimerMode::Repeating
+                    )
+                },
+                Gun { 
                     pattern: AimPattern::Rotate,
-                    bullet_size: 20.0,
-                    bullet_vel: 150.0,
+                    bullet_size: 15.0,
+                    bullet_vel: 112.5,
+                    bullet_damage: 5,
                     color: Color::rgb(1.0, 0.75, 5.5),
                     rotation: Quat::default(),
                     timer: Timer::new(
@@ -107,8 +120,6 @@ pub fn aim_at_player(
     player_q: Query<&Transform, With<Player>>,
     t: Res<Time>
 ) {
-    //let pt = player_q.single().translation.truncate();
-
     if let Ok(transform) = player_q.get_single() {
         let pt = transform.translation.truncate();
         for (bt, mut boss) in &mut boss_q {
@@ -151,7 +162,7 @@ pub fn shoot_player(
                     Bullet { 
                         vel: gun.bullet_vel, 
                         size: gun.bullet_size,
-                        damage: 10,
+                        damage: gun.bullet_damage,
                         source: BulletSource::Enemy
                     },
                 ));      
