@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use bevy::diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin};
 use bevy::text::BreakLineOn;
 
-pub fn spawn_ui(
+pub fn spawn(
     mut commands: Commands, 
     asset_server: Res<AssetServer>
 ) {

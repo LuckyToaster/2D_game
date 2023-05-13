@@ -22,13 +22,13 @@ pub fn handle(
     t: Res<Time>,
     data: Res<GameData>,
     mut commands: Commands,
-    mut bullets: Query<(Entity, &mut Transform, &Bullet)>,
     //mut player_query: Query<(&Transform, &mut Health), Without<Boss>>,
     //mut boss_query: Query<(&Transform, &mut Health), Without<Player>>
     mut query: ParamSet<(
-        Query<(&Transform, &mut Health), Without<Boss>>,
-        Query<(&Transform, &mut Health), Without<Player>>
+        Query<(&Transform, &mut Health), With<Player>>,
+        Query<(&Transform, &mut Health), With<Boss>>,
     )>,
+    mut bullets: Query<(Entity, &mut Transform, &Bullet), (Without<Player>, Without<Boss>)>
 ) {
 
     for (bullet_entity, mut bt, bullet) in &mut bullets {
@@ -54,7 +54,7 @@ pub fn handle(
                     let distance = bt.translation.distance(transform.translation);
                     // in here, the size of the player and boss should be obtained from their
                     // transforms fuck, not the 'gamedata object' 
-                    if distance <= bullet.size + data.player_size { 
+                    if distance <= bullet.size + transform.scale.x * 8 as f32 { 
                         health.0 -= bullet.damage;
                         commands.entity(bullet_entity).despawn();
                     }
