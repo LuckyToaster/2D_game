@@ -1,5 +1,5 @@
 use crate::health::Health;
-use crate::gamedata::GameData;
+use crate::gun::Target;
 use bevy::{
     prelude::*,
     utils::Duration,
@@ -40,7 +40,6 @@ pub struct Player {
 
 pub fn spawn_player_and_camera( 
     mut commands: Commands,
-    gamedata: Res<GameData>,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
@@ -70,6 +69,7 @@ pub fn spawn_player_and_camera(
 
     commands.spawn((
         Health(30),
+        Target::Player,
         crate::player::AnimationIndices { first: 84, last: 88 },
         crate::player::AnimationTimer(
             Timer::from_seconds(

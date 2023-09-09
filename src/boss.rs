@@ -3,7 +3,7 @@ use crate::bullets::{Bullet, BulletSource};
 use crate::player::Player;
 use crate::health::Health;
 use crate::gamedata::GameData;
-use crate::gun::{Gun, AimPattern};
+use crate::gun::{Gun, Target, AimPattern};
 use bevy::{
     prelude::*,
     utils::Duration,
@@ -52,6 +52,7 @@ pub fn spawn(
 
     commands.spawn((
         Health(100),
+        Target::Boss,
         crate::player::AnimationIndices { first: 84, last: 88 },
         crate::player::AnimationTimer(
             Timer::from_seconds(
@@ -115,6 +116,7 @@ pub fn spawn(
 }
 
 
+/* */
 pub fn aim_at_player(
     mut boss_q: Query<(&mut Transform, &mut Boss), Without<Player>>,
     player_q: Query<&Transform, With<Player>>,

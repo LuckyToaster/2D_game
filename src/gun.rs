@@ -1,6 +1,11 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
+pub enum Target {
+    Player, NPC, Boss
+}
+
+#[derive(Component)]
 pub struct Gun {
     pub pattern: AimPattern,
     pub bullet_size: f32,
@@ -15,3 +20,4 @@ pub struct Gun {
 pub enum AimPattern {
     Rotate, Snap, Spiral,
 }
+
