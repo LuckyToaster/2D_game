@@ -2,7 +2,7 @@ use crate::boss::Boss;
 use crate::player::Player;
 use crate::health::Health;
 use bevy::prelude::*;
-use bevy::diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin};
+use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
 use bevy::text::BreakLineOn;
 
 pub fn spawn(
@@ -24,16 +24,17 @@ pub fn spawn(
     commands.spawn(
         TextBundle {
             text: Text {
-                alignment: TextAlignment::Center,
-                linebreak_behaviour: BreakLineOn::AnyCharacter,
+                //alignment: TextAlignment::Center,
+                justify: JustifyText::Center,
+                linebreak_behavior: BreakLineOn::AnyCharacter,
                 sections: vec![
                     TextSection::from_style(gold_style.clone()),
-                    TextSection::new(" FPS ", white_style.clone()),
+                    TextSection::new(" FPS ", white_style.clone()), // changed from white_style.clone() -> no need to clone right? just inmutable borrow
                     TextSection::new(" Player Health: ", white_style.clone()),
-                    TextSection::from_style(gold_style.clone()),
-                    TextSection::new(" Boss Health: ", white_style),
-                    TextSection::from_style(gold_style)
-                ]
+                    TextSection::from_style(gold_style.clone()), 
+                    TextSection::new(" Boss Health: ", white_style.clone()),
+                    TextSection::from_style(gold_style.clone())
+                ],
             },
             style: Style {
                 display: Display::Flex,
@@ -51,13 +52,13 @@ pub fn spawn(
 
 
 pub fn update(
-    diagnostics: Res<Diagnostics>, 
+    diagnostics: Res<DiagnosticsStore>,  // changed from Res<Diagnostics>
     mut text_query: Query<&mut Text>, 
     player_health_query: Query<&Health, With<Player>>,
     boss_health_query: Query<&Health, With<Boss>>
 ) {
     for mut text in &mut text_query {
-        if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
+        if let Some(fps) = diagnostics.get(&FrameTimeDiagnosticsPlugin::FPS) {
             if let Some(value) = fps.smoothed() {
                 text.sections[0].value = format!("{value:.2}");
             }

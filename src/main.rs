@@ -13,14 +13,43 @@ mod ui;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest())) 
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())
-
+        .add_plugins( 
+            (
+                DefaultPlugins,
+                //ImagePlugin::default_nearest(),
+                FrameTimeDiagnosticsPlugin
+                //FrameTimeDiagnosticsPlugin::default()
+            )
+        ) 
         .init_resource::<gamedata::GameData>()
+        .add_systems(Startup, 
+            (
+                ui::spawn, 
+                player::spawn_player_and_camera, 
+                boss::spawn
+            )
+        )
+        .add_systems(Update,
+            (
+                player::handle_movement_and_camera,
+                player::animate, // change to animations::animate (for all entities with animation components or whatever)
+                player::shoot,
+                boss::aim_at_player,
+                boss::shoot_player,
+                bullets::handle,
+                health::handle,
+                health::quit_on_player_death,
+                ui::update,
+                bevy::window::close_on_esc
+            )
+        ).run();
 
+        /* 
         .add_startup_system(player::spawn_player_and_camera)
         .add_startup_system(ui::spawn)
         .add_startup_system(boss::spawn)
+
+        //.add_systems()
 
         .add_system(bevy::window::close_on_esc.before(bullets::handle))
         .add_system(health::quit_on_player_death.before(bullets::handle))
@@ -33,6 +62,7 @@ fn main() {
         .add_system(boss::shoot_player.before(bullets::handle))
         .add_system(bullets::handle)
         .run();
+        */
 }
 
 

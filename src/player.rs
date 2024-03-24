@@ -1,14 +1,20 @@
 use crate::health::Health;
 use crate::gun::Target;
+use bevy_math::primitives::Circle;
 use bevy::{
-    prelude::*,
-    utils::Duration,
-    sprite::{ColorMaterial, MaterialMesh2dBundle},
-    render::{color::Color, mesh::{Mesh, shape::Circle}},
     core_pipeline::{
         bloom::BloomSettings,
         tonemapping::Tonemapping,
-    },
+    }, prelude::*, render::{
+        color::Color, 
+        mesh::Mesh, 
+        //texture
+    }, sprite::{
+        ColorMaterial, 
+        MaterialMesh2dBundle
+    }, 
+    //text, 
+    utils::Duration
 };
 
 pub const SIZE: f32 = 20.0;
@@ -41,10 +47,10 @@ pub struct Player {
 pub fn spawn_player_and_camera( 
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     commands.spawn((
-        crate::player::PlayerCamera,
+        PlayerCamera,
         BloomSettings::default(), // 3. Enable bloom for the camera,
         Camera2dBundle {
             camera: Camera {
@@ -56,19 +62,13 @@ pub fn spawn_player_and_camera(
         },
     ));
 
-    let texture_atlas = TextureAtlas::from_grid(
-        asset_server.load("Tilemap/tilemap.png"),
-        Vec2::new(16.0, 16.0), 
-        12, 
-        11, 
-        Some(Vec2::new(1.0, 1.0)), 
-        None
-    );
-
-    let texture_atlas_handle = texture_atlases.add(texture_atlas);
+    let texture = asset_server.load("Tilemap/tilemap.png");
+    let layout = TextureAtlasLayout::from_grid(Vec2::new(16.0, 16.0), 12, 11, Some(Vec2::new(1.0, 1.0)), None);
+    let texture_atlas_layout = texture_atlases.add(layout);
+    let animation_indices = AnimationIndices { first: 84, last: 88};
 
     commands.spawn((
-        Health(30),
+        Health(3000),
         Target::Player,
         crate::player::AnimationIndices { first: 84, last: 88 },
         crate::player::AnimationTimer(
@@ -78,8 +78,15 @@ pub fn spawn_player_and_camera(
             )
         ),
         SpriteSheetBundle {
-            texture_atlas: texture_atlas_handle,
-            sprite: TextureAtlasSprite::new(84), // pass in first animation index
+            texture,
+            //texture_atlas: texture_atlas_handle,
+            //atlas: texture_atlas_handle,
+            atlas: TextureAtlas { 
+                layout: texture_atlas_layout, 
+                index: animation_indices.first
+            },
+            //sprite: TextureAtlasSprite::new(84), // pass in first animation index
+            //sprite: Sprite::new(84),
             transform: Transform::from_scale(Vec3::splat(3.0)),
             ..default()
         },
@@ -100,15 +107,15 @@ pub fn spawn_player_and_camera(
 
 pub fn animate(
     time: Res<Time>,
-    mut query: Query<(&AnimationIndices, &mut AnimationTimer, &mut TextureAtlasSprite)>
+    mut query: Query<(&AnimationIndices, &mut AnimationTimer, &mut TextureAtlas)>
 ) {
-    for (indices, mut timer, mut sprite) in &mut query {
+    for (indices, mut timer, mut atlas) in &mut query {
         timer.tick(time.delta());
         if timer.just_finished() {
-            sprite.index = if sprite.index == indices.last { 
+            atlas.index = if atlas.index == indices.last { 
                 indices.first 
             } else { 
-                sprite.index + 1 
+                atlas.index + 1 
             };
         }
     }
@@ -117,7 +124,7 @@ pub fn animate(
 
 pub fn handle_movement_and_camera(
     time: Res<Time>,
-    k: Res<Input<KeyCode>>,
+    k: Res<ButtonInput<KeyCode>>,
     mut player: Query<&mut Transform, With<Player>>,
     mut camera: Query<&mut Transform, (Without<Player>, With<PlayerCamera>)>,
 ) {
@@ -127,12 +134,12 @@ pub fn handle_movement_and_camera(
         let forward = pt.rotation.mul_vec3(Vec3::new(0.0, 1.0, 0.0));
         let right = pt.rotation.mul_vec3(Vec3::new(1.0, 0.0, 0.0));
 
-        if k.pressed(KeyCode::W) { direction += forward; }
-        if k.pressed(KeyCode::A) { direction -= right; }
-        if k.pressed(KeyCode::S) { direction -= forward; }
-        if k.pressed(KeyCode::D) { direction += right; }
-        if k.pressed(KeyCode::L) { rotation_factor += 1.0; }
-        if k.pressed(KeyCode::Apostrophe) { rotation_factor -= 1.0; }
+        if k.pressed(KeyCode::KeyW) { direction += forward; }
+        if k.pressed(KeyCode::KeyA) { direction -= right; }
+        if k.pressed(KeyCode::KeyS) { direction -= forward; }
+        if k.pressed(KeyCode::KeyD) { direction += right; }
+        if k.pressed(KeyCode::KeyL) { rotation_factor += 1.0; }
+        if k.pressed(KeyCode::Quote) { rotation_factor -= 1.0; }
         if direction.length() > 0.0 { direction = direction.normalize(); }
 
         let rotation = rotation_factor * ROTATION_SPEED * time.delta_seconds();
@@ -149,13 +156,13 @@ pub fn shoot(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     player: Query<(&Transform, &Player)>,
-    k: Res<Input<KeyCode>>,
+    k: Res<ButtonInput<KeyCode>>,
 ) {
     for (pt, p) in &player {
-        if k.just_pressed(KeyCode::P) {
+        if k.just_pressed(KeyCode::KeyP) {
             commands.spawn((
                 MaterialMesh2dBundle {
-                    mesh: meshes.add(Circle::new(p.bullet_size).into()).into(),
+                    mesh: meshes.add(Circle::new(p.bullet_size)).into(),
                     material: materials.add(ColorMaterial::from(Color::rgb(6.25, 9.4, 9.1))),
                     transform: Transform {
                         translation: pt.translation,

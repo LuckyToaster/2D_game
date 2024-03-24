@@ -4,12 +4,16 @@ use crate::player::Player;
 use crate::health::Health;
 use crate::gamedata::GameData;
 use crate::gun::{Gun, Target, AimPattern};
+use bevy::sprite::Mesh2dHandle;
+use bevy::{animation, text};
 use bevy::{
     prelude::*,
     utils::Duration,
-    render::{mesh::{shape::Circle, Mesh}, color::Color},
+    render::{mesh::{/*shape::Circle,*/ Mesh}, color::Color},
     sprite::{SpriteBundle, MaterialMesh2dBundle, ColorMaterial},
 };
+
+use bevy_math::primitives::Circle;
 
 /*#[derive(Component)]
 pub enum AimPattern {
@@ -37,23 +41,18 @@ pub fn spawn(
     data: Res<GameData>,
     mut commands: Commands, 
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    let texture_atlas = TextureAtlas::from_grid(
-        asset_server.load("Tilemap/tilemap.png"),
-        Vec2::new(16.0, 16.0), 
-        12, 
-        11, 
-        Some(Vec2::new(1.0, 1.0)), 
-        None
-    );
-
-    let texture_atlas_handle = texture_atlases.add(texture_atlas);
+    let texture = asset_server.load("Tilemap/tilemap.png");
+    let layout = TextureAtlasLayout::from_grid(Vec2::new(16.0, 16.0), 12, 11, Some(Vec2::new(1.0, 1.0)), Some(Vec2::new(0.0, 0.0)));
+    let texture_atlas_layout = texture_atlases.add(layout);
+    let animation_indices = crate::player::AnimationIndices {first: 84, last: 88};
 
     commands.spawn((
         Health(100),
         Target::Boss,
-        crate::player::AnimationIndices { first: 84, last: 88 },
+        animation_indices,
+        //crate::player::AnimationIndices { first: 84, last: 88 },
         crate::player::AnimationTimer(
             Timer::from_seconds(
                 0.1, 
@@ -61,8 +60,14 @@ pub fn spawn(
             )
         ),
         SpriteSheetBundle {
-            texture_atlas: texture_atlas_handle,
-            sprite: TextureAtlasSprite::new(84), 
+            //texture_atlas: texture_atlas_handle,
+            texture,
+            //sprite: TextureAtlasSprite::new(84), 
+            atlas: TextureAtlas {
+                layout: texture_atlas_layout, 
+                index: 84 // cannot do animation indices.first because move, cannot do &animation_indices.first
+            },
+            //sprite: Sprite::new(84),
             //transform: Transform::from_scale(Vec3::splat(3.0)),
             transform: Transform {
                 translation: Vec3::new(100.0, 100.0, 0.0), 
@@ -152,7 +157,7 @@ pub fn shoot_player(
             if gun.timer.just_finished() {
                 commands.spawn((
                     MaterialMesh2dBundle {
-                        mesh: meshes.add(Circle::new(gun.bullet_size).into()).into(),
+                        mesh: meshes.add(Circle::new(gun.bullet_size)).into(),
                         material: materials.add(ColorMaterial::from(gun.color)),
                         transform: Transform {
                             translation: bt.translation,
