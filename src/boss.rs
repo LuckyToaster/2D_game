@@ -36,7 +36,7 @@ pub fn spawn(
 
     commands.spawn((
         Health(100),
-        Target::Boss,
+        //Target::Boss,
         animation_indices,
         crate::player::AnimationTimer(
             Timer::from_seconds(
@@ -102,6 +102,7 @@ pub fn spawn(
 }
 
 
+// put this in gun file, generic guns should aim at their targets?
 pub fn aim_at_player(
     mut boss_q: Query<(&mut Transform, &mut Boss), Without<Player>>,
     player_q: Query<&Transform, With<Player>>,

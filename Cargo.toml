@@ -7,9 +7,13 @@ edition = "2021"
 
 [dependencies]
 nalgebra = "0.32.2"
-#bevy = "0.10.1"
 bevy = "0.13.1"
 bevy_math = "0.13.1"
 rand = "0.8.5"
+
+serde = "1.0.197"
+serde_derive = "1.0.197"
+toml = "0.8.12"
+
 
 

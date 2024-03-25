@@ -1,8 +1,9 @@
 use bevy::prelude::*;
 
+// use this to shoot bullets with a source
 #[derive(Component)]
 pub enum Target {
-    Player, NPC, Boss
+    Player, Enemy 
 }
 
 #[derive(Component)]
@@ -18,6 +19,6 @@ pub struct Gun {
 
 #[derive(Component)]
 pub enum AimPattern {
-    Rotate, Snap, Spiral,
+    Rotate, Snap, Spiral, 
 }
 

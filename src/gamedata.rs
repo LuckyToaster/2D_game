@@ -1,6 +1,11 @@
 use bevy::prelude::*;
 
 #[derive(Resource)]
+pub enum GameState {
+    Pause, InGame,
+}
+
+#[derive(Resource)]
 pub struct GameData {
     pub dt: f32,
     pub player_speed: f32,
@@ -10,6 +15,7 @@ pub struct GameData {
     pub height: f32,
     pub scaling: i32,
 }
+
 
 // get single instance entities (like the player)'s consts here
 impl Default for GameData {

@@ -1,19 +1,20 @@
 use crate::health::Health;
 use crate::gun::Target;
+
 use bevy_math::primitives::Circle;
 use bevy::{
     core_pipeline::{
         bloom::BloomSettings,
         tonemapping::Tonemapping,
-    }, prelude::*, render::{
+    }, 
+    prelude::*, render::{
         color::Color, 
         mesh::Mesh, 
-        //texture
-    }, sprite::{
+    }, 
+    sprite::{
         ColorMaterial, 
         MaterialMesh2dBundle
     }, 
-    //text, 
     utils::Duration
 };
 
@@ -24,20 +25,9 @@ pub const ROTATION_SPEED: f32 = 3.5;
 #[derive(Component)]
 pub struct PlayerCamera;
 
-#[derive(Component, Deref, DerefMut)]
-pub struct AnimationTimer(pub Timer);
-
-#[derive(Component)]
-pub struct AnimationIndices {
-    pub first: usize,
-    pub last: usize,
-}
 
 #[derive(Component)]
 pub struct Player {
-    //pub speed: f32,
-    //pub size: f32,
-    //pub rotation_speed: f32,
     pub bullet_size: f32,
     pub bullet_vel: f32,
     pub shooting_timer: Timer,
@@ -79,21 +69,14 @@ pub fn spawn_player_and_camera(
         ),
         SpriteSheetBundle {
             texture,
-            //texture_atlas: texture_atlas_handle,
-            //atlas: texture_atlas_handle,
             atlas: TextureAtlas { 
                 layout: texture_atlas_layout, 
                 index: animation_indices.first
             },
-            //sprite: TextureAtlasSprite::new(84), // pass in first animation index
-            //sprite: Sprite::new(84),
             transform: Transform::from_scale(Vec3::splat(3.0)),
             ..default()
         },
         Player {
-            //speed: 150.0,
-            //size: (8 * gamedata.scaling) as f32,
-            //rotation_speed: 3.5,
             bullet_size: 2.0,
             bullet_vel: 400.0,
             shooting_timer: Timer::new(
@@ -104,6 +87,15 @@ pub fn spawn_player_and_camera(
     ));
 }
 
+
+#[derive(Component, Deref, DerefMut)]
+pub struct AnimationTimer(pub Timer);
+
+#[derive(Component)]
+pub struct AnimationIndices {
+    pub first: usize,
+    pub last: usize,
+}
 
 pub fn animate(
     time: Res<Time>,
