@@ -34,9 +34,10 @@ fn main() {
             (
                 player::handle_movement_and_camera,
                 player::animate, // change to animations::animate (for all entities with animation components or whatever)
-                player::shoot,
-                boss::aim_at_player,
-                boss::shoot_player,
+                //player::shoot,
+                //boss::aim_at_player,
+                //boss::shoot_player,
+                gun::aim_and_shoot,
                 bullets::handle,
                 health::handle,
                 health::quit_on_player_death,

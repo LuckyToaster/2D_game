@@ -1,5 +1,4 @@
 use crate::health::Health;
-use crate::gun::Target;
 
 use bevy_math::primitives::Circle;
 use bevy::{
@@ -59,7 +58,6 @@ pub fn spawn_player_and_camera(
 
     commands.spawn((
         Health(3000),
-        Target::Player,
         crate::player::AnimationIndices { first: 84, last: 88 },
         crate::player::AnimationTimer(
             Timer::from_seconds(

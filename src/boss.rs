@@ -67,6 +67,7 @@ pub fn spawn(
                     bullet_damage: 15,
                     color: Color::rgb(7.5, 0.0, 7.5),
                     rotation: Quat::IDENTITY,
+                    target: Target::Player,
                     timer: Timer::new(
                         Duration::from_millis(50), 
                         TimerMode::Repeating
@@ -79,6 +80,7 @@ pub fn spawn(
                     bullet_damage: 10,
                     color: Color::rgb(5.5, 1.0, 9.5),
                     rotation: Quat::NAN,
+                    target: Target::Player,
                     timer: Timer::new(
                         Duration::from_millis(200), 
                         TimerMode::Repeating
@@ -91,6 +93,7 @@ pub fn spawn(
                     bullet_damage: 5,
                     color: Color::rgb(1.0, 0.75, 5.5),
                     rotation: Quat::default(),
+                    target: Target::Player,
                     timer: Timer::new(
                         Duration::from_millis(150), 
                         TimerMode::Repeating
@@ -117,7 +120,8 @@ pub fn aim_at_player(
                 match gun.pattern {
                     AimPattern::Snap => gun.rotation = Quat::from_rotation_arc(Vec3::Y, b2p.extend(0.)),
                     AimPattern::Rotate => gun.rotation *= Quat::from_rotation_z(get_rotation_angle(b2p, bt_cp, t.delta_seconds())),
-                    AimPattern::Spiral => gun.rotation *= Quat::from_rotation_z(0.20)
+                    AimPattern::Spiral => gun.rotation *= Quat::from_rotation_z(0.20),
+                    _ => println!("fugg!")
                 }
             }
         }
