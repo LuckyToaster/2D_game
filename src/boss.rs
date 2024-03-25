@@ -15,20 +15,6 @@ use bevy::{
 
 use bevy_math::primitives::Circle;
 
-/*#[derive(Component)]
-pub enum AimPattern {
-    Rotate, Snap, Spiral,
-}*/
-
-/*#[derive(Component)]
-pub struct Gun {
-    pub pattern: AimPattern,
-    pub bullet_size: f32,
-    pub bullet_vel: f32,
-    pub color: Color,
-    pub rotation: Quat,
-    pub timer: Timer
-}*/
 
 #[derive(Component)]
 pub struct Boss {
@@ -52,7 +38,6 @@ pub fn spawn(
         Health(100),
         Target::Boss,
         animation_indices,
-        //crate::player::AnimationIndices { first: 84, last: 88 },
         crate::player::AnimationTimer(
             Timer::from_seconds(
                 0.1, 
@@ -60,15 +45,11 @@ pub fn spawn(
             )
         ),
         SpriteSheetBundle {
-            //texture_atlas: texture_atlas_handle,
             texture,
-            //sprite: TextureAtlasSprite::new(84), 
             atlas: TextureAtlas {
                 layout: texture_atlas_layout, 
                 index: 84 // cannot do animation indices.first because move, cannot do &animation_indices.first
             },
-            //sprite: Sprite::new(84),
-            //transform: Transform::from_scale(Vec3::splat(3.0)),
             transform: Transform {
                 translation: Vec3::new(100.0, 100.0, 0.0), 
                 rotation: Quat::default(), 
@@ -121,7 +102,6 @@ pub fn spawn(
 }
 
 
-/* */
 pub fn aim_at_player(
     mut boss_q: Query<(&mut Transform, &mut Boss), Without<Player>>,
     player_q: Query<&Transform, With<Player>>,
