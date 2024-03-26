@@ -20,29 +20,95 @@ pub struct Gun {
     pub color: Color,
     pub rotation: Quat,
     pub timer: Timer,
-    pub target: Target
+    pub target: Target  // should this be removed
 }
+
 
 use crate::boss::Boss;
 use crate::player::Player;
 use crate::bullets::{Bullet, BulletSource};
 use bevy::sprite::MaterialMesh2dBundle;
 
-// aim_and_shoot
+// aim_and_shoot all guns
 pub fn aim_and_shoot(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut gun_q: Query<&mut Gun>,
     player_q: Query<(&Transform, &Player)>,
-    player_q2: Query<&Transform, With<Player>>,
-    mut boss_q: Query<(&Transform, &mut Boss)>,  
+    boss_q: Query<&Transform, With<Boss>>,  
     k: Res<ButtonInput<KeyCode>>,
     t: Res<Time>,
-) {
 
+    //player_q2: Query<&Transform, With<Player>>,
+    //mut boss_q2: Query<(&Transform, &mut Boss)>,
+) {
+    if let (Ok((player_t, player)), Ok(boss_t)) = (player_q.get_single(), boss_q.get_single()) {
+        for mut gun in gun_q.iter_mut() {
+            // aim guns and player shoot
+            let b2p: Vec2 = (player_t.translation.truncate() - boss_t.translation.truncate()).normalize();
+            match gun.pattern {
+                AimPattern::Snap => gun.rotation = Quat::from_rotation_arc(Vec3::Y, b2p.extend(0.)),
+                AimPattern::Rotate => gun.rotation *= Quat::from_rotation_z(get_rotation_angle(b2p, *boss_t, t.delta_seconds())),
+                AimPattern::Spiral => gun.rotation *= Quat::from_rotation_z(0.20),
+                AimPattern::PlayerInput =>  {   // player shoots through the aimpattern (player input)
+                    if k.just_pressed(KeyCode::KeyP) {
+                        commands.spawn((
+                            MaterialMesh2dBundle {
+                                mesh: meshes.add(Circle::new(player.bullet_size)).into(),
+                                material: materials.add(ColorMaterial::from(Color::rgb(6.25, 9.4, 9.1))),
+                                transform: Transform {
+                                    translation: player_t.translation,
+                                    rotation: player_t.rotation,
+                                    ..default()
+                                },
+                                ..default()
+                            },
+                            Bullet { 
+                                vel: player.bullet_vel, 
+                                size: player.bullet_size,
+                                damage: 10,
+                                source: BulletSource::Player
+                            }
+                        ));      
+                    } 
+                }
+            }
+            // boss shoot guns    
+            match gun.target {
+                Target::Enemy => println!("helo lol"),
+                Target::Player => {
+                    gun.timer.tick(t.delta());
+                    if gun.timer.just_finished() {
+                        commands.spawn((
+                            MaterialMesh2dBundle {
+                                mesh: meshes.add(Circle::new(gun.bullet_size)).into(),
+                                material: materials.add(ColorMaterial::from(gun.color)),
+                                transform: Transform {
+                                    translation: boss_t.translation,
+                                    rotation: gun.rotation,
+                                    ..default()
+                                },
+                                ..default()
+                            },
+                            Bullet { 
+                                vel: gun.bullet_vel, 
+                                size: gun.bullet_size,
+                                damage: gun.bullet_damage,
+                                source: BulletSource::Enemy
+                            },
+                        ));      
+                    }
+                }
+            }
+        } 
+    }
+    
+    /* 
+    // boss::aim
     if let Ok(transform) = player_q2.get_single() {
         let pt = transform.translation.truncate();
-        for (bt, mut boss) in &mut boss_q {
+        for (bt, mut boss) in &mut boss_q2 {
             let b2p: Vec2 = (pt - bt.translation.truncate()).normalize();
             let bt_cp = bt.clone();
             for gun in boss.guns.iter_mut() {
@@ -57,8 +123,8 @@ pub fn aim_and_shoot(
     }
 
 
-    // boss guns shooting bullets
-    for (bt, mut boss) in &mut boss_q {
+    // boss::shoot
+    for (bt, mut boss) in &mut boss_q2 {
         for gun in boss.guns.iter_mut() {
             gun.timer.tick(t.delta());
             if gun.timer.just_finished() {
@@ -84,7 +150,7 @@ pub fn aim_and_shoot(
         }
     }
 
-    // player guns shooting bullets
+    // player::shoot
     for (pt, p) in &player_q {
         if k.just_pressed(KeyCode::KeyP) {
             commands.spawn((
@@ -107,10 +173,9 @@ pub fn aim_and_shoot(
             ));      
         } 
     }
-
-    // if i iterate for all guns, (if Gun has a Target attribute), and depending on the target i use the player or boss transform and data to shoot the bullets
-
+    */
 }
+
 
 #[inline]
 fn get_rotation_angle(b2p: Vec2, bt: Transform, t: f32) -> f32 {
