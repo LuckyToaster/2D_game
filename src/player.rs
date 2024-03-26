@@ -1,19 +1,12 @@
 use crate::health::Health;
+use crate::gun::{Guns, Gun};
 
-use bevy_math::primitives::Circle;
 use bevy::{
     core_pipeline::{
         bloom::BloomSettings,
         tonemapping::Tonemapping,
     }, 
-    prelude::*, render::{
-        color::Color, 
-        mesh::Mesh, 
-    }, 
-    sprite::{
-        ColorMaterial, 
-        MaterialMesh2dBundle
-    }, 
+    prelude::*, 
     utils::Duration
 };
 
@@ -74,14 +67,15 @@ pub fn spawn_player_and_camera(
             transform: Transform::from_scale(Vec3::splat(3.0)),
             ..default()
         },
-        Player {
+        Player { // dont need this, change this for guns
             bullet_size: 2.0,
             bullet_vel: 400.0,
             shooting_timer: Timer::new(
                 Duration::from_millis(250), 
                 TimerMode::Repeating
             )
-        }
+        },
+        Guns::new(vec![Gun::player_gun()])
     ));
 }
 
@@ -102,11 +96,11 @@ pub fn animate(
     for (indices, mut timer, mut atlas) in &mut query {
         timer.tick(time.delta());
         if timer.just_finished() {
-            atlas.index = if atlas.index == indices.last { 
-                indices.first 
+            if atlas.index == indices.last { 
+                atlas.index = indices.first;
             } else { 
-                atlas.index + 1 
-            };
+                atlas.index += 1; 
+            }
         }
     }
 }
@@ -124,13 +118,27 @@ pub fn handle_movement_and_camera(
         let forward = pt.rotation.mul_vec3(Vec3::new(0.0, 1.0, 0.0));
         let right = pt.rotation.mul_vec3(Vec3::new(1.0, 0.0, 0.0));
 
-        if k.pressed(KeyCode::KeyW) { direction += forward; }
-        if k.pressed(KeyCode::KeyA) { direction -= right; }
-        if k.pressed(KeyCode::KeyS) { direction -= forward; }
-        if k.pressed(KeyCode::KeyD) { direction += right; }
-        if k.pressed(KeyCode::KeyL) { rotation_factor += 1.0; }
-        if k.pressed(KeyCode::Quote) { rotation_factor -= 1.0; }
-        if direction.length() > 0.0 { direction = direction.normalize(); }
+        if k.pressed(KeyCode::KeyW) { 
+            direction += forward; 
+        }
+        if k.pressed(KeyCode::KeyA) { 
+            direction -= right; 
+        }
+        if k.pressed(KeyCode::KeyS) { 
+            direction -= forward; 
+        }
+        if k.pressed(KeyCode::KeyD) { 
+            direction += right; 
+        }
+        if k.pressed(KeyCode::KeyL) { 
+            rotation_factor += 1.0; 
+        }
+        if k.pressed(KeyCode::Quote) { 
+            rotation_factor -= 1.0; 
+        }
+        if direction.length() > 0.0 { 
+            direction = direction.normalize();  // tf?
+        }
 
         let rotation = rotation_factor * ROTATION_SPEED * time.delta_seconds();
         pt.rotate_z(rotation);
@@ -140,34 +148,3 @@ pub fn handle_movement_and_camera(
     }
 }
 
-
-pub fn shoot(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    player: Query<(&Transform, &Player)>,
-    k: Res<ButtonInput<KeyCode>>,
-) {
-    for (pt, p) in &player {
-        if k.just_pressed(KeyCode::KeyP) {
-            commands.spawn((
-                MaterialMesh2dBundle {
-                    mesh: meshes.add(Circle::new(p.bullet_size)).into(),
-                    material: materials.add(ColorMaterial::from(Color::rgb(6.25, 9.4, 9.1))),
-                    transform: Transform {
-                        translation: pt.translation,
-                        rotation: pt.rotation,
-                        ..default()
-                    },
-                    ..default()
-                },
-                crate::bullets::Bullet { 
-                    vel: p.bullet_vel, 
-                    size: p.bullet_size,
-                    damage: 10,
-                    source: crate::bullets::BulletSource::Player
-                },
-            ));      
-        } 
-    }
-}

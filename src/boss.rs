@@ -3,7 +3,8 @@ use crate::bullets::{Bullet, BulletSource};
 use crate::player::Player;
 use crate::health::Health;
 use crate::gamedata::GameData;
-use crate::gun::{Gun, Target, AimPattern};
+use crate::gun::{Gun, Guns, Target, AimPattern};
+
 use bevy::sprite::Mesh2dHandle;
 use bevy::{animation, text};
 use bevy::{
@@ -18,7 +19,7 @@ use bevy_math::primitives::Circle;
 
 #[derive(Component)]
 pub struct Boss {
-    pub guns: Vec<Gun>,
+    //pub guns: Vec<Gun>,
     pub size: f32,
 }
 
@@ -59,7 +60,9 @@ pub fn spawn(
         },
         Boss {
             size: (8 * data.scaling) as f32,
-            guns: vec![
+        },
+        Guns::new(
+            vec![
                 Gun { 
                     pattern: AimPattern::Spiral,
                     bullet_size: 8.0,
@@ -100,79 +103,7 @@ pub fn spawn(
                     )
                 },
             ]
-        }
+        )
     ));
-}
-
-
-// put this in gun file, generic guns should aim at their targets?
-pub fn aim_at_player(
-    mut boss_q: Query<(&mut Transform, &mut Boss), Without<Player>>,
-    player_q: Query<&Transform, With<Player>>,
-    t: Res<Time>
-) {
-    if let Ok(transform) = player_q.get_single() {
-        let pt = transform.translation.truncate();
-        for (bt, mut boss) in &mut boss_q {
-            let b2p: Vec2 = (pt - bt.translation.truncate()).normalize();
-            let bt_cp = bt.clone();
-            for gun in boss.guns.iter_mut() {
-                match gun.pattern {
-                    AimPattern::Snap => gun.rotation = Quat::from_rotation_arc(Vec3::Y, b2p.extend(0.)),
-                    AimPattern::Rotate => gun.rotation *= Quat::from_rotation_z(get_rotation_angle(b2p, bt_cp, t.delta_seconds())),
-                    AimPattern::Spiral => gun.rotation *= Quat::from_rotation_z(0.20),
-                    _ => println!("fugg!")
-                }
-            }
-        }
-    }
-}
-
-
-pub fn shoot_player(
-    mut commands: Commands, 
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    mut boss_q: Query<(&Transform, &mut Boss)>,
-    time: Res<Time>
-) {
-    for (bt, mut boss) in &mut boss_q {
-        for gun in boss.guns.iter_mut() {
-            gun.timer.tick(time.delta());
-            if gun.timer.just_finished() {
-                commands.spawn((
-                    MaterialMesh2dBundle {
-                        mesh: meshes.add(Circle::new(gun.bullet_size)).into(),
-                        material: materials.add(ColorMaterial::from(gun.color)),
-                        transform: Transform {
-                            translation: bt.translation,
-                            rotation: gun.rotation,
-                            ..default()
-                        },
-                        ..default()
-                    },
-                    Bullet { 
-                        vel: gun.bullet_vel, 
-                        size: gun.bullet_size,
-                        damage: gun.bullet_damage,
-                        source: BulletSource::Enemy
-                    },
-                ));      
-            }
-        }
-    }
-}
-
-
-#[inline]
-fn get_rotation_angle(b2p: Vec2, bt: Transform, t: f32) -> f32 {
-    let b_forward = (bt.rotation * Vec3::Y).truncate();
-    let forward_dot_player = b_forward.dot(b2p);
-    if (forward_dot_player - 1.0).abs() < f32::EPSILON { return 0.0;}
-    let b_right = (bt.rotation * Vec3::X).truncate();
-    let right_dot_player = b_right.dot(b2p);
-    let rotation_sign = -f32::copysign(1.0, right_dot_player);
-    let max_angle = forward_dot_player.clamp(-1.0, 1.0).acos(); 
-    return rotation_sign * (f32::to_radians(90.0) * t).min(max_angle);
 }
 
