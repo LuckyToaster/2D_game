@@ -1,9 +1,17 @@
 use bevy::prelude::*;
 
+
+#[derive(Copy, Clone)]
+pub enum EntityType {
+    Enemy, Player 
+}
+
+
 #[derive(Resource)]
 pub enum GameState {
     Pause, InGame,
 }
+
 
 #[derive(Resource)]
 pub struct GameData {
@@ -18,6 +26,7 @@ pub struct GameData {
 
 
 // get single instance entities (like the player)'s consts here
+// move to player compoenent
 impl Default for GameData {
     fn default() -> GameData {
         GameData {

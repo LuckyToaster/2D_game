@@ -1,4 +1,5 @@
 use crate::health::Health;
+use crate::gamedata::*;
 use crate::gun::{Guns, Gun};
 
 use bevy::{
@@ -7,7 +8,7 @@ use bevy::{
         tonemapping::Tonemapping,
     }, 
     prelude::*, 
-    utils::Duration
+    //utils::Duration
 };
 
 pub const SIZE: f32 = 20.0;
@@ -20,9 +21,19 @@ pub struct PlayerCamera;
 
 #[derive(Component)]
 pub struct Player {
-    pub bullet_size: f32,
-    pub bullet_vel: f32,
-    pub shooting_timer: Timer,
+    hitbox_size: f32,
+    speed: f32,
+    rotation_speed: f32,
+}
+
+impl Player {
+    pub fn new(hitbox_size: f32, speed: f32, rotation_speed: f32) -> Self {
+        Self { hitbox_size, speed, rotation_speed }
+    }
+
+    pub fn default() -> Self {
+        Self { hitbox_size: 17.0, speed: 180.0, rotation_speed: 3.75 }
+    }
 }
 
 
@@ -50,7 +61,9 @@ pub fn spawn_player_and_camera(
     let animation_indices = AnimationIndices { first: 84, last: 88};
 
     commands.spawn((
+        Player::default(),
         Health(3000),
+        Guns::new(vec![Gun::player_gun(), Gun::default_snap(EntityType::Enemy)]),
         crate::player::AnimationIndices { first: 84, last: 88 },
         crate::player::AnimationTimer(
             Timer::from_seconds(
@@ -67,15 +80,6 @@ pub fn spawn_player_and_camera(
             transform: Transform::from_scale(Vec3::splat(3.0)),
             ..default()
         },
-        Player { // dont need this, change this for guns
-            bullet_size: 2.0,
-            bullet_vel: 400.0,
-            shooting_timer: Timer::new(
-                Duration::from_millis(250), 
-                TimerMode::Repeating
-            )
-        },
-        Guns::new(vec![Gun::player_gun()])
     ));
 }
 
@@ -109,6 +113,7 @@ pub fn animate(
 pub fn handle_movement_and_camera(
     time: Res<Time>,
     k: Res<ButtonInput<KeyCode>>,
+    //player_c = Component(Player),
     mut player: Query<&mut Transform, With<Player>>,
     mut camera: Query<&mut Transform, (Without<Player>, With<PlayerCamera>)>,
 ) {

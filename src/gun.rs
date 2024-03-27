@@ -1,16 +1,13 @@
 use crate::boss::Boss;
 use crate::player::Player;
-use crate::bullets::{Bullet, BulletSource};
-use bevy::sprite::MaterialMesh2dBundle;
+use crate::gamedata::*;
+use crate::bullets::Bullet;
+
 use bevy::{
     prelude::*,
     utils::Duration,
 };
 
-#[derive(Component)]
-pub enum Target {
-    Player, Enemy 
-}
 
 #[derive(Component)]
 pub enum AimPattern {
@@ -26,7 +23,7 @@ pub struct Gun {
     pub color: Color,
     pub rotation: Quat,
     pub timer: Timer,
-    pub target: Target  // should this be removed
+    pub target: EntityType  // should this be removed
 }
 
 impl Gun {
@@ -38,7 +35,7 @@ impl Gun {
         color: Color, 
         rotation: Quat, 
         timer: Timer, 
-        target: Target
+        target: EntityType
     ) -> Self {
         Gun { 
             pattern, 
@@ -59,12 +56,60 @@ impl Gun {
             bullet_size: 2.0,
             bullet_vel: 450.0,
             bullet_damage: 5,
-            color: Color::rgb(6.25, 9.4, 9.1),
+            color: Color::rgb(0.0, 0.0, 50.0),
             rotation: Quat::default(), // make sense of this with player
-            target: Target::Enemy,
+            target: EntityType::Enemy,
             timer: Timer::new(
                 Duration::from_millis(100),
                 TimerMode::Once
+            )
+        }
+    }
+
+    pub fn default_spiral(target: EntityType) -> Self {
+        Gun { 
+            pattern: AimPattern::Spiral,
+            bullet_size: 8.0,
+            bullet_vel: 275.0,
+            bullet_damage: 15,
+            color: Color::rgb(7.5, 0.0, 7.5),
+            rotation: Quat::IDENTITY,
+            target: target,
+            timer: Timer::new(
+                Duration::from_millis(50), 
+                TimerMode::Repeating
+            )
+        }
+    }
+
+    pub fn default_snap(target: EntityType) -> Self {
+        Gun { 
+            pattern: AimPattern::Snap,
+            bullet_size: 5.0,
+            bullet_vel: 175.0,
+            bullet_damage: 2,
+            color: Color::rgb(5.5, 1.0, 9.5),
+            rotation: Quat::NAN,
+            target: target,
+            timer: Timer::new(
+                Duration::from_millis(200), 
+                TimerMode::Repeating
+            )
+        }
+    }
+
+    pub fn default_rotate(target: EntityType) -> Self {
+        Gun { 
+            pattern: AimPattern::Rotate,
+            bullet_size: 15.0,
+            bullet_vel: 112.5,
+            bullet_damage: 5,
+            color: Color::rgb(1.0, 0.75, 5.5),
+            rotation: Quat::default(),
+            target: target,
+            timer: Timer::new(
+                Duration::from_millis(150), 
+                TimerMode::Repeating
             )
         }
     }
@@ -80,85 +125,67 @@ impl Guns {
     }
 }
 
-// aim_and_shoot all guns
-pub fn aim_and_shoot(
+
+pub fn enemy_guns(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    mut shooter_q: Query<(&Transform, &mut Guns)>,
+    mut enemies_q: Query<(&Transform, &mut Guns), With<Boss>>,
     player_q: Query<&Transform, With<Player>>,
-    boss_q: Query<&Transform, With<Boss>>,
-    k: Res<ButtonInput<KeyCode>>,
     t: Res<Time>,
 ) {
+    for (et, mut guns) in enemies_q.iter_mut() {
+        let pt = player_q.get_single().unwrap();
+        let e2p = (pt.translation.truncate() - et.translation.truncate()).normalize();
 
-    let player_t = player_q.get_single().unwrap();
-    let boss_t = boss_q.get_single().unwrap();
-
-    for (shooter_t, mut guns) in shooter_q.iter_mut() {     
         for gun in guns.0.iter_mut() {
             gun.timer.tick(t.delta());
-            match gun.target {
-                Target::Enemy => {
-                    let shooter2boss = (boss_t.translation.truncate() - shooter_t.translation.truncate()).normalize();
-                    match gun.pattern {
-                        AimPattern::Snap => gun.rotation = Quat::from_rotation_arc(Vec3::Y, shooter2boss.extend(0.)),
-                        AimPattern::Rotate => gun.rotation *= Quat::from_rotation_z(get_rotation_angle(shooter2boss, *boss_t, t.delta_seconds())), // hm
-                        AimPattern::Spiral => gun.rotation *= Quat::from_rotation_z(0.20),
-                        AimPattern::PlayerInput => {
-                            if k.just_pressed(KeyCode::KeyP)  && gun.timer.finished() { // fix cooldown for shooting
-                                commands.spawn((
-                                    MaterialMesh2dBundle {
-                                        mesh: meshes.add(Circle::new(gun.bullet_size)).into(),
-                                        material: materials.add(ColorMaterial::from(Color::rgb(6.25, 9.4, 9.1))),
-                                        transform: Transform {
-                                            translation: shooter_t.translation,
-                                            rotation: shooter_t.rotation,
-                                            ..default()
-                                        },
-                                        ..default()
-                                    },
-                                    Bullet { 
-                                        vel: gun.bullet_vel, 
-                                        size: gun.bullet_size,
-                                        damage: gun.bullet_damage,
-                                        source: BulletSource::Player
-                                    }
-                                ));      
-                            } 
-                        }
-                    }
-                }, 
-                Target::Player => {
-                    let shooter2player = (player_t.translation.truncate() - shooter_t.translation.truncate()).normalize();
-                    match gun.pattern {
-                        AimPattern::Snap => gun.rotation = Quat::from_rotation_arc(Vec3::Y, shooter2player.extend(0.)),
-                        AimPattern::Rotate => gun.rotation *= Quat::from_rotation_z(get_rotation_angle(shooter2player, *shooter_t, t.delta_seconds())),
-                        AimPattern::Spiral => gun.rotation *= Quat::from_rotation_z(0.20),
-                        AimPattern::PlayerInput => todo!(), // hmm
-                    }
 
-                    if gun.timer.just_finished() {
-                        commands.spawn((
-                            MaterialMesh2dBundle {
-                                mesh: meshes.add(Circle::new(gun.bullet_size)).into(),
-                                material: materials.add(ColorMaterial::from(gun.color)),
-                                transform: Transform {
-                                    translation: boss_t.translation,
-                                    rotation: gun.rotation,
-                                    ..default()
-                                },
-                                ..default()
-                            },
-                            Bullet { 
-                                vel: gun.bullet_vel, 
-                                size: gun.bullet_size,
-                                damage: gun.bullet_damage,
-                                source: BulletSource::Enemy
-                            },
-                        ));      
+            match gun.pattern {
+                AimPattern::Snap => gun.rotation = Quat::from_rotation_arc(Vec3::Y, e2p.extend(0.)),
+                AimPattern::Rotate => gun.rotation *= Quat::from_rotation_z(get_rotation_angle(e2p, *pt, t.delta_seconds())), 
+                AimPattern::Spiral => gun.rotation *= Quat::from_rotation_z(0.20),
+                AimPattern::PlayerInput => todo!("fugg")
+            }
+
+            if gun.timer.just_finished() { 
+                Bullet::spawn(gun, et, &mut commands, &mut meshes, &mut materials); 
+            }
+        }
+    }
+}
+
+
+pub fn player_guns(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut players_q: Query<(&Transform, &mut Guns), With<Player>>,
+    enemy_q: Query<&Transform, With<Boss>>,
+    t: Res<Time>,
+    k: Res<ButtonInput<KeyCode>>,
+) {
+
+    for (pt, mut guns) in players_q.iter_mut() {
+        let et = enemy_q.get_single().unwrap();
+        let p2e = (et.translation.truncate() - pt.translation.truncate()).normalize();
+
+        for gun in guns.0.iter_mut() {
+            gun.timer.tick(t.delta());
+
+            match gun.pattern {
+                AimPattern::Snap => gun.rotation = Quat::from_rotation_arc(Vec3::Y, p2e.extend(0.)),
+                AimPattern::Rotate => gun.rotation *= Quat::from_rotation_z(get_rotation_angle(p2e, *et, t.delta_seconds())), // hm
+                AimPattern::Spiral => gun.rotation *= Quat::from_rotation_z(0.20),
+                AimPattern::PlayerInput => {
+                    if k.just_pressed(KeyCode::KeyP) && gun.timer.finished() {
+                        Bullet::spawn_straight(gun, pt, &mut commands, &mut meshes, &mut materials);   
                     }
-                }
+                } 
+            }
+
+            if gun.timer.just_finished() {
+                Bullet::spawn(gun, pt, &mut commands, &mut meshes, &mut materials);
             }
         }
     }
