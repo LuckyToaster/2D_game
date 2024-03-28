@@ -24,7 +24,6 @@ fn main() {
         .add_plugins( 
             (
                 DefaultPlugins,
-                //ImagePlugin::default_nearest(),
                 FrameTimeDiagnosticsPlugin
                 //FrameTimeDiagnosticsPlugin::default()
             )
