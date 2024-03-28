@@ -1,6 +1,9 @@
 use crate::health::Health;
-use crate::gamedata::*;
-use crate::gun::{Guns, Gun};
+use crate::gamedata::GameData;
+use crate::guns::{
+    Guns, 
+    Gun
+};
 
 use bevy::{
     core_pipeline::{
@@ -8,8 +11,12 @@ use bevy::{
         tonemapping::Tonemapping,
     }, 
     prelude::*, 
-    //utils::Duration
 };
+
+
+// =======
+// STRUCTS 
+// =======
 
 pub const SIZE: f32 = 20.0;
 pub const SPEED: f32 = 175.0;
@@ -37,8 +44,13 @@ impl Player {
 }
 
 
+// =======
+// SYSTEMS
+// =======
+
 pub fn spawn_player_and_camera( 
     mut commands: Commands,
+    gamedata: Res<GameData>,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
@@ -63,7 +75,7 @@ pub fn spawn_player_and_camera(
     commands.spawn((
         Player::default(),
         Health(3000),
-        Guns::new(vec![Gun::player_gun(), Gun::default_snap(EntityType::Enemy)]),
+        Guns::new(vec![Gun::player_gun(), /*Gun::default_snap(EntityType::Enemy)*/]),
         crate::player::AnimationIndices { first: 84, last: 88 },
         crate::player::AnimationTimer(
             Timer::from_seconds(
@@ -77,7 +89,7 @@ pub fn spawn_player_and_camera(
                 layout: texture_atlas_layout, 
                 index: animation_indices.first
             },
-            transform: Transform::from_scale(Vec3::splat(3.0)),
+            transform: Transform::from_scale(Vec3::splat(gamedata.player_size)),
             ..default()
         },
     ));
@@ -111,9 +123,9 @@ pub fn animate(
 
 
 pub fn handle_movement_and_camera(
+    gamedata: Res<GameData>,
     time: Res<Time>,
     k: Res<ButtonInput<KeyCode>>,
-    //player_c = Component(Player),
     mut player: Query<&mut Transform, With<Player>>,
     mut camera: Query<&mut Transform, (Without<Player>, With<PlayerCamera>)>,
 ) {
@@ -145,10 +157,10 @@ pub fn handle_movement_and_camera(
             direction = direction.normalize();  // tf?
         }
 
-        let rotation = rotation_factor * ROTATION_SPEED * time.delta_seconds();
+        let rotation = rotation_factor * gamedata.player_rotation_speed * time.delta_seconds();
         pt.rotate_z(rotation);
         ct.rotate_z(rotation);
-        pt.translation += direction * SPEED * time.delta_seconds();
+        pt.translation += direction * gamedata.player_speed * time.delta_seconds();
         ct.translation = pt.translation;
     }
 }

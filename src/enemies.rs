@@ -1,46 +1,19 @@
-#![allow(unused_imports)]
-use crate::bullets::Bullet;
-use crate::player::{
-    Player,
-    AnimationTimer,
-    AnimationIndices,
-};
 use crate::health::Health;
 use crate::gamedata::*;
-use crate::gun::{
+use crate::guns::{
     Gun, 
     Guns, 
-    AimPattern
 };
 
-use bevy_math::primitives::Circle;
-use bevy::{animation, text};
-use bevy::{
-    prelude::*,
-    utils::Duration,
-    render::{
-        mesh::Mesh, 
-        color::Color
-    },
-    sprite::{
-        SpriteBundle,
-        MaterialMesh2dBundle, 
-        ColorMaterial,
-        Mesh2dHandle,
-    },
-};
-
+use bevy::prelude::*;
 
 
 #[derive(Component)]
-pub struct Boss {
-    //pub guns: Vec<Gun>,
-    pub size: f32,
-}
+pub struct Enemy;
 
 
 pub fn spawn(
-    data: Res<GameData>,
+    //data: Res<GameData>,
     mut commands: Commands, 
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
@@ -51,6 +24,7 @@ pub fn spawn(
     let animation_indices = crate::player::AnimationIndices {first: 84, last: 88};
 
     commands.spawn((
+        Enemy,
         Health(100),
         animation_indices,
         Guns::new(vec![
@@ -72,10 +46,7 @@ pub fn spawn(
                 scale: Vec3::splat(3.0),
             },
             ..default()
-        },
-        Boss {
-            size: (8 * data.scaling) as f32,
-        },
+        }
     ));
 }
 

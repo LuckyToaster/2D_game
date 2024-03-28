@@ -6,10 +6,13 @@ pub enum EntityType {
     Enemy, Player 
 }
 
+#[derive(Resource)]
+pub struct HitboxSize(f32);
+
 
 #[derive(Resource)]
 pub enum GameState {
-    Pause, InGame,
+    Pause, InGame, Menu, Splash
 }
 
 
@@ -31,9 +34,9 @@ impl Default for GameData {
     fn default() -> GameData {
         GameData {
             dt: 1.0 / 240.0,
-            player_speed: 150.0,
-            player_size: (8 * 3) as f32,
-            player_rotation_speed: 3.5,
+            player_speed: 200.0,
+            player_size: 3.0,
+            player_rotation_speed: 5.0,
             width: 1200.0,
             height: 600.0,
             scaling: 3,

@@ -1,4 +1,4 @@
-use crate::boss::Boss;
+use crate::enemies::Enemy;
 use crate::player::Player;
 use crate::health::Health;
 use bevy::prelude::*;
@@ -55,7 +55,7 @@ pub fn update(
     diagnostics: Res<DiagnosticsStore>,  // changed from Res<Diagnostics>
     mut text_query: Query<&mut Text>, 
     player_health_query: Query<&Health, With<Player>>,
-    boss_health_query: Query<&Health, With<Boss>>
+    boss_health_query: Query<&Health, With<Enemy>>
 ) {
     for mut text in &mut text_query {
         if let Some(fps) = diagnostics.get(&FrameTimeDiagnosticsPlugin::FPS) {

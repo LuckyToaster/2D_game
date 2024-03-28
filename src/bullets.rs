@@ -1,12 +1,15 @@
-use crate::boss::Boss;
+use crate::enemies::Enemy;
 use crate::player::Player;
 use crate::health::Health;
 use crate::gamedata::*;
-use crate::gun::Gun;
+use crate::guns::Gun;
 
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 
+// ==========
+// COMPONENTS
+// ==========
 
 #[derive(Component)]
 pub struct Bullet {
@@ -27,6 +30,7 @@ impl Bullet {
         }
     }
 
+    #[inline] // means this is used in system function
     pub fn spawn(
         g: &Gun, 
         t: &Transform, 
@@ -49,6 +53,7 @@ impl Bullet {
         ));
     }
 
+    #[inline]
     pub fn spawn_straight(
         g: &Gun, 
         t: &Transform, 
@@ -73,6 +78,10 @@ impl Bullet {
 }
 
 
+// =======
+// SYSTEMS
+// =======
+
 // SIMPLIFY BULLETS QUERY
 pub fn handle(
     t: Res<Time>,
@@ -80,11 +89,11 @@ pub fn handle(
     mut commands: Commands,
     mut query: ParamSet<(
         Query<(&Transform, &mut Health), With<Player>>, 
-        Query<(&Transform, &mut Health), With<Boss>>
+        Query<(&Transform, &mut Health), With<Enemy>>
     )>,
     mut bullets: Query<
         (Entity, &mut Transform, &Bullet), 
-        (Without<Player>, Without<Boss>, With<Bullet>)
+        (Without<Player>, Without<Enemy>, With<Bullet>)
     >
 ) {
     for (bullet_entity, mut bt, bullet) in &mut bullets {
@@ -110,7 +119,7 @@ pub fn handle(
                     let distance = bt.translation.distance(transform.translation);
                     // in here, the size of the player and boss should be obtained from their
                     // transforms fuck, not the 'gamedata object' 
-                    if distance <= bullet.size + transform.scale.x * 8 as f32 { 
+                    if distance <= bullet.size + transform.scale.x as f32 { // change to HitboxSize, or transform.scale waterfall from the 3d / 2d animations
                         health.0 -= bullet.damage;
                         commands.entity(bullet_entity).despawn();
                     }

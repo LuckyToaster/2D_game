@@ -1,5 +1,4 @@
 #![allow(dead_code)]
-
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy::prelude::*;
 
@@ -7,9 +6,17 @@ mod gamedata;
 mod bullets;
 mod health;
 mod player;
-mod boss;
-mod gun;
+mod enemies;
+mod guns;
 mod ui;
+
+/*
+    module layout:
+        COMPONENTS, RESOURCES, DATA STRUCTURES, then
+        SYSTEMS, then
+        IMPLEMENTATIONS, then
+        CONSTRUCTORS
+ */
 
 
 fn main() {
@@ -27,22 +34,20 @@ fn main() {
             (
                 ui::spawn, 
                 player::spawn_player_and_camera, 
-                boss::spawn
+                enemies::spawn
             )
         )
         .add_systems(Update,
             (
+                //health::quit_on_player_death,
                 player::handle_movement_and_camera,
                 player::animate, // change to animations::animate (for all entities with animation components or whatever)
-
-                gun::enemy_guns,
-                gun::player_guns,
-
-                bullets::handle,
                 health::handle,
-                health::quit_on_player_death,
+                (guns::enemy_guns, guns::player_guns, bullets::handle).after(health::handle),
                 ui::update,
                 bevy::window::close_on_esc
+
+
             )
         ).run();
 }
