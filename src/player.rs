@@ -27,21 +27,7 @@ pub struct PlayerCamera;
 
 
 #[derive(Component)]
-pub struct Player {
-    hitbox_size: f32,
-    speed: f32,
-    rotation_speed: f32,
-}
-
-impl Player {
-    pub fn new(hitbox_size: f32, speed: f32, rotation_speed: f32) -> Self {
-        Self { hitbox_size, speed, rotation_speed }
-    }
-
-    pub fn default() -> Self {
-        Self { hitbox_size: 17.0, speed: 180.0, rotation_speed: 3.75 }
-    }
-}
+pub struct Player;
 
 
 // =======
@@ -73,7 +59,7 @@ pub fn spawn_player_and_camera(
     let animation_indices = AnimationIndices { first: 84, last: 88};
 
     commands.spawn((
-        Player::default(),
+        Player,
         Health(3000),
         Guns::new(vec![Gun::player_gun(), /*Gun::default_snap(EntityType::Enemy)*/]),
         crate::player::AnimationIndices { first: 84, last: 88 },
