@@ -12,7 +12,7 @@ bevy_math = "0.13.1"
 rand = "0.8.5"
 
 serde = { version = "1.0.197", features = ["derive"] } 
-json = "0.12.4"
+serde_json = "1.0.116"
 
 
 

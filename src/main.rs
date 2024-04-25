@@ -7,6 +7,7 @@ mod bullets;
 mod health;
 mod player;
 mod enemies;
+mod spritesheets;
 mod camera;
 mod guns;
 mod ui;

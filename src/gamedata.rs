@@ -1,12 +1,15 @@
 use bevy::prelude::*;
+use serde::Deserialize;
+use std::fs::File;
+use std::io::BufReader;
 
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Deserialize)]
 pub enum EntityType {
     Enemy, Player 
 }
 
-#[derive(Resource)]
+#[derive(Resource, Deserialize)]
 pub struct HitboxSize(f32);
 
 
@@ -16,7 +19,7 @@ pub enum GameState {
 }
 
 
-#[derive(Resource)]
+#[derive(Resource, Deserialize)]
 pub struct GameData {
     pub dt: f32,
     pub player_speed: f32,
@@ -27,20 +30,12 @@ pub struct GameData {
     pub scaling: i32,
 }
 
-
-// get single instance entities (like the player)'s consts here
-// move to player compoenent
 impl Default for GameData {
     fn default() -> GameData {
-        GameData {
-            dt: 1.0 / 240.0,
-            player_speed: 200.0,
-            player_size: 3.0,
-            player_rotation_speed: 5.0,
-            width: 1200.0,
-            height: 600.0,
-            scaling: 3,
-        }
+        let file = File::open("config/gamedata.json").unwrap();
+        let reader = BufReader::new(file);
+        let data: GameData = serde_json::from_reader(reader).unwrap();
+        data
     }
 }
 

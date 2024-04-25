@@ -1,0 +1,12 @@
+{
+    "path":"Tilemap/tilemap.png",
+    "width":16.0,
+    "height":16.0,
+    "columns":12,
+    "rows":11,
+    "first_animation_index":84,
+    "last_animation_index":88,
+    "padding_x":1.0,
+    "padding_y":1.0,
+    "duration_s":0.1
+}

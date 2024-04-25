@@ -1,0 +1,9 @@
+{
+    "dt":0.004166667,
+    "player_speed":200.0,
+    "player_size":3.0,
+    "player_rotation_speed":5.0,
+    "width":1200.0,
+    "height":600.0,
+    "scaling":3
+}

@@ -1,5 +1,6 @@
 use crate::health::Health;
 use crate::gamedata::GameData;
+use crate::spritesheets::SpriteSheet;
 use crate::guns::{
     Guns, 
     Gun
@@ -10,12 +11,8 @@ use bevy::prelude::*;
 // STRUCTS 
 // =======
 
-pub const SIZE: f32 = 20.0;
-pub const SPEED: f32 = 175.0;
-pub const ROTATION_SPEED: f32 = 3.5;
-
-#[derive(Component)]
-pub struct PlayerCamera;
+//#[derive(Component)]
+//pub struct PlayerCamera;
 
 
 #[derive(Component)]
@@ -26,37 +23,33 @@ pub struct Player;
 // SYSTEMS
 // =======
 
-
 pub fn spawn( 
     mut commands: Commands,
     gamedata: Res<GameData>,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-
-    let texture = asset_server.load("Tilemap/tilemap.png");
-    let layout = TextureAtlasLayout::from_grid(Vec2::new(16.0, 16.0), 12, 11, Some(Vec2::new(1.0, 1.0)), None);
-    let texture_atlas_layout = texture_atlases.add(layout);
-    let animation_indices = AnimationIndices { first: 84, last: 88};
+    let sheet = SpriteSheet::player();
 
     commands.spawn((
         Player,
         Health(3000),
-        Guns::new(vec![Gun::player_gun(), /*Gun::default_snap(EntityType::Enemy)*/]),
-        crate::player::AnimationIndices { first: 84, last: 88 },
-        crate::player::AnimationTimer(
-            Timer::from_seconds(
-                0.1, 
-                TimerMode::Repeating
-            )
-        ),
+        Guns::new(vec![Gun::player_gun()]),
+        AnimationIndices { first: sheet.first_animation_index, last: sheet.last_animation_index }, // from here to the end is the animation data
+        AnimationTimer(Timer::from_seconds(sheet.duration_s, TimerMode::Repeating)),
         SpriteSheetBundle {
-            texture,
-            atlas: TextureAtlas { 
-                layout: texture_atlas_layout, 
-                index: animation_indices.first
-            },
             transform: Transform::from_scale(Vec3::splat(gamedata.player_size)),
+            texture: asset_server.load(sheet.path),
+            atlas: TextureAtlas { 
+                index: sheet.first_animation_index,
+                layout: texture_atlases.add(TextureAtlasLayout::from_grid(
+                    Vec2::new(sheet.width, sheet.height), 
+                    sheet.columns, 
+                    sheet.rows,
+                    Some(Vec2::new(sheet.padding_x, sheet.padding_y)), 
+                    None
+                ))
+            },
             ..default()
         },
     ));
@@ -71,6 +64,7 @@ pub struct AnimationIndices {
     pub first: usize,
     pub last: usize,
 }
+
 
 pub fn animate(
     time: Res<Time>,
@@ -91,6 +85,7 @@ pub fn animate(
 
 pub fn handle_movement(
     time: Res<Time>,
+    gamedata: Res<GameData>,
     k: Res<ButtonInput<KeyCode>>,
     mut player: Query<&mut Transform, With<Player>>,
 ) {
@@ -108,8 +103,8 @@ pub fn handle_movement(
         if k.pressed(KeyCode::Quote) { rotation_factor -= 1.0; }
         if direction.length() > 0.0 { direction = direction.normalize(); }
 
-        let rotation = rotation_factor * ROTATION_SPEED * time.delta_seconds();
+        let rotation = rotation_factor * gamedata.player_rotation_speed * time.delta_seconds();
         pt.rotate_z(rotation);
-        pt.translation += direction * SPEED * time.delta_seconds();
+        pt.translation += direction * gamedata.player_speed * time.delta_seconds();
     }
 }

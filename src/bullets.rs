@@ -4,6 +4,7 @@ use crate::health::Health;
 use crate::gamedata::*;
 use crate::guns::Gun;
 
+use serde::Deserialize;
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 

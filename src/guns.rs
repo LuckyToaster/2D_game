@@ -3,6 +3,9 @@ use crate::player::Player;
 use crate::gamedata::EntityType;
 use crate::bullets::Bullet;
 
+//use serde::{self, Deserialize, Serialize};
+//use json;
+
 use bevy::{
     prelude::*,
     utils::Duration,
@@ -53,16 +56,19 @@ pub fn enemy_guns(
     t: Res<Time>,
 ) {
     for (et, mut guns) in enemies_q.iter_mut() {
-        let pt = player_q.get_single().unwrap();
-        let e2p = (pt.translation.truncate() - et.translation.truncate()).normalize();
+        if let Ok(pt) = player_q.get_single() {
+            let e2p = (pt.translation.truncate() - et.translation.truncate()).normalize();
 
-        for gun in guns.0.iter_mut() {
-            AimPattern::rotate_gun(gun, et, pt, e2p, &t, None, &mut commands, &mut meshes, &mut materials);
+            for gun in guns.0.iter_mut() {
+                AimPattern::rotate_gun(gun, et, pt, e2p, &t, None, &mut commands, &mut meshes, &mut materials);
 
-            gun.timer.tick(t.delta());
-            if gun.timer.just_finished() { 
-                Bullet::spawn(gun, et, &mut commands, &mut meshes, &mut materials); 
+                gun.timer.tick(t.delta());
+                if gun.timer.just_finished() { 
+                    Bullet::spawn(gun, et, &mut commands, &mut meshes, &mut materials); 
+                }
             }
+        } else {
+            continue; // the 'smart' guns that aim at the player shouldn't fire
         }
     }
 }
@@ -77,17 +83,17 @@ pub fn player_guns(
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut players_q: Query<(&Transform, &mut Guns), With<Player>>,
 ) {
-
     for (pt, mut guns) in players_q.iter_mut() {
-        let et = enemy_q.get_single().unwrap();
-        let p2e = (et.translation.truncate() - pt.translation.truncate()).normalize();
+        for et in enemy_q.iter() {
+            let p2e = (et.translation.truncate() - pt.translation.truncate()).normalize();
 
-        for gun in guns.0.iter_mut() {
-            AimPattern::rotate_gun(gun, pt, et, p2e, &t, Some(&k), &mut commands, &mut meshes, &mut materials);
+            for gun in guns.0.iter_mut() {
+                AimPattern::rotate_gun(gun, pt, et, p2e, &t, Some(&k), &mut commands, &mut meshes, &mut materials);
 
-            gun.timer.tick(t.delta());
-            if gun.timer.just_finished() {
-                Bullet::spawn(gun, pt, &mut commands, &mut meshes, &mut materials);
+                gun.timer.tick(t.delta());
+                if gun.timer.just_finished() {
+                    Bullet::spawn(gun, pt, &mut commands, &mut meshes, &mut materials);
+                }
             }
         }
     }
