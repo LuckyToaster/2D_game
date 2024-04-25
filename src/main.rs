@@ -7,6 +7,7 @@ mod bullets;
 mod health;
 mod player;
 mod enemies;
+mod camera;
 mod guns;
 mod ui;
 
@@ -32,21 +33,21 @@ fn main() {
         .add_systems(Startup, 
             (
                 ui::spawn, 
-                player::spawn_player_and_camera, 
-                enemies::spawn
+                player::spawn, 
+                enemies::spawn,
+                camera::spawn
             )
         )
         .add_systems(Update,
             (
                 //health::quit_on_player_death,
-                player::handle_movement_and_camera,
+                player::handle_movement,
                 player::animate, // change to animations::animate (for all entities with animation components or whatever)
+                camera::follow_player,
                 health::handle,
                 (guns::enemy_guns, guns::player_guns, bullets::handle).after(health::handle),
                 ui::update,
                 bevy::window::close_on_esc
-
-
             )
         ).run();
 }

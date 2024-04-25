@@ -4,15 +4,7 @@ use crate::guns::{
     Guns, 
     Gun
 };
-
-use bevy::{
-    core_pipeline::{
-        bloom::BloomSettings,
-        tonemapping::Tonemapping,
-    }, 
-    prelude::*, 
-};
-
+use bevy::prelude::*;
 
 // =======
 // STRUCTS 
@@ -34,24 +26,13 @@ pub struct Player;
 // SYSTEMS
 // =======
 
-pub fn spawn_player_and_camera( 
+
+pub fn spawn( 
     mut commands: Commands,
     gamedata: Res<GameData>,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    commands.spawn((
-        PlayerCamera,
-        BloomSettings::default(), // 3. Enable bloom for the camera,
-        Camera2dBundle {
-            camera: Camera {
-                hdr: true, // 1. HDR is required for bloom
-                ..default()
-            },
-            tonemapping: Tonemapping::AcesFitted, //Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended
-            ..default()
-        },
-    ));
 
     let texture = asset_server.load("Tilemap/tilemap.png");
     let layout = TextureAtlasLayout::from_grid(Vec2::new(16.0, 16.0), 12, 11, Some(Vec2::new(1.0, 1.0)), None);
@@ -108,46 +89,27 @@ pub fn animate(
 }
 
 
-pub fn handle_movement_and_camera(
-    gamedata: Res<GameData>,
+pub fn handle_movement(
     time: Res<Time>,
     k: Res<ButtonInput<KeyCode>>,
     mut player: Query<&mut Transform, With<Player>>,
-    mut camera: Query<&mut Transform, (Without<Player>, With<PlayerCamera>)>,
 ) {
-    if let (Ok(mut pt), Ok(mut ct)) = (player.get_single_mut(), camera.get_single_mut()) {
+    if let Ok(mut pt) = player.get_single_mut() {
         let mut direction = Vec3::ZERO;
         let mut rotation_factor = 0.0;
         let forward = pt.rotation.mul_vec3(Vec3::new(0.0, 1.0, 0.0));
         let right = pt.rotation.mul_vec3(Vec3::new(1.0, 0.0, 0.0));
 
-        if k.pressed(KeyCode::KeyW) { 
-            direction += forward; 
-        }
-        if k.pressed(KeyCode::KeyA) { 
-            direction -= right; 
-        }
-        if k.pressed(KeyCode::KeyS) { 
-            direction -= forward; 
-        }
-        if k.pressed(KeyCode::KeyD) { 
-            direction += right; 
-        }
-        if k.pressed(KeyCode::KeyL) { 
-            rotation_factor += 1.0; 
-        }
-        if k.pressed(KeyCode::Quote) { 
-            rotation_factor -= 1.0; 
-        }
-        if direction.length() > 0.0 { 
-            direction = direction.normalize();  // tf?
-        }
+        if k.pressed(KeyCode::KeyW) { direction += forward; }
+        if k.pressed(KeyCode::KeyA) { direction -= right; }
+        if k.pressed(KeyCode::KeyS) { direction -= forward; }
+        if k.pressed(KeyCode::KeyD) { direction += right; }
+        if k.pressed(KeyCode::KeyL) { rotation_factor += 1.0; }
+        if k.pressed(KeyCode::Quote) { rotation_factor -= 1.0; }
+        if direction.length() > 0.0 { direction = direction.normalize(); }
 
-        let rotation = rotation_factor * gamedata.player_rotation_speed * time.delta_seconds();
+        let rotation = rotation_factor * ROTATION_SPEED * time.delta_seconds();
         pt.rotate_z(rotation);
-        ct.rotate_z(rotation);
-        pt.translation += direction * gamedata.player_speed * time.delta_seconds();
-        ct.translation = pt.translation;
+        pt.translation += direction * SPEED * time.delta_seconds();
     }
 }
-
