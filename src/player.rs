@@ -1,6 +1,6 @@
 use crate::health::Health;
 use crate::gamedata::GameData;
-use crate::spritesheets::SpriteSheet;
+use crate::animations::{SpriteSheetConfig, AnimationIndices, AnimationTimer};
 use crate::guns::{
     Guns, 
     Gun
@@ -29,7 +29,7 @@ pub fn spawn(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    let sheet = SpriteSheet::player();
+    let sheet = SpriteSheetConfig::player();
 
     commands.spawn((
         Player,
@@ -56,6 +56,7 @@ pub fn spawn(
 }
 
 
+/* 
 #[derive(Component, Deref, DerefMut)]
 pub struct AnimationTimer(pub Timer);
 
@@ -64,23 +65,7 @@ pub struct AnimationIndices {
     pub first: usize,
     pub last: usize,
 }
-
-
-pub fn animate(
-    time: Res<Time>,
-    mut query: Query<(&AnimationIndices, &mut AnimationTimer, &mut TextureAtlas)>
-) {
-    for (indices, mut timer, mut atlas) in &mut query {
-        timer.tick(time.delta());
-        if timer.just_finished() {
-            if atlas.index == indices.last { 
-                atlas.index = indices.first;
-            } else { 
-                atlas.index += 1; 
-            }
-        }
-    }
-}
+*/
 
 
 pub fn handle_movement(

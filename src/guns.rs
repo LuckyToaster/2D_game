@@ -1,10 +1,11 @@
+
+use std::{fs::File, io::BufReader};
+
 use crate::enemies::Enemy;
 use crate::player::Player;
 use crate::gamedata::EntityType;
 use crate::bullets::Bullet;
-
-//use serde::{self, Deserialize, Serialize};
-//use json;
+use serde::Deserialize;
 
 use bevy::{
     prelude::*,
@@ -16,7 +17,44 @@ use bevy::{
 // COMPONENTS
 // ==========
 
-#[derive(Component)]
+#[derive(Deserialize)]
+pub enum QuatType {
+    Nan, Identity, Default
+}
+
+#[derive(Deserialize)]
+pub enum TimerBehavior {
+    Once, Repeating
+}
+
+#[derive(Deserialize)]
+pub struct GunConfig {
+    pub pattern: AimPattern,
+    pub rotation: QuatType,
+    pub timer_duration_millis: u64,
+    pub timer_behavior: TimerBehavior,
+    pub target: EntityType,
+    pub bullet_size: f32,
+    pub bullet_vel: f32,
+    pub bullet_damage: i32,
+    pub bullet_color_r: f32,
+    pub bullet_color_g: f32,
+    pub bullet_color_b: f32,
+}
+
+#[derive(Deserialize)]
+pub struct GunConfigs(Vec<GunConfig>);
+
+impl GunConfigs {
+    pub fn enemies() -> Vec<GunConfigs> {
+        let file = File::open("config/enemies_guns.json").unwrap();
+        let reader = BufReader::new(file);
+        let data: Vec<GunConfigs> = serde_json::from_reader(reader).unwrap();
+        data
+    }
+}
+
+#[derive(Component, Deserialize)]
 pub enum AimPattern {
     Rotate, Snap, Spiral, PlayerInput 
 }
@@ -36,8 +74,17 @@ pub struct Gun {
 #[derive(Component)] 
 pub struct Guns(Vec<Gun>);
 
+
 impl Guns {
     pub fn new(guns: Vec<Gun>) -> Self {
+        Self(guns)
+    }
+
+    pub fn from(gunconfigs: GunConfigs) -> Self {
+        let mut guns = Vec::<Gun>::new();
+        for gunconfig in gunconfigs.0.into_iter() {
+            guns.push(Gun::from(gunconfig));
+        } 
         Self(guns)
     }
 }
@@ -172,6 +219,33 @@ impl Gun {
             rotation, 
             timer, 
             target 
+        }
+    }
+    
+    pub fn from(gunconfig: GunConfig) -> Self {
+        Gun {
+            pattern: gunconfig.pattern,
+            bullet_size: gunconfig.bullet_size,
+            bullet_vel: gunconfig.bullet_vel,
+            bullet_damage: gunconfig.bullet_damage,
+            color: Color::rgb(
+                gunconfig.bullet_color_r as f32, 
+                gunconfig.bullet_color_g as f32, 
+                gunconfig.bullet_color_b as f32
+            ),
+            rotation: match gunconfig.rotation {
+                QuatType::Default => Quat::default(),
+                QuatType::Identity => Quat::IDENTITY,
+                QuatType::Nan => Quat::NAN
+            },
+            target: gunconfig.target,
+            timer: Timer::new(
+                Duration::from_millis(gunconfig.timer_duration_millis),
+                match gunconfig.timer_behavior {
+                    TimerBehavior::Once => TimerMode::Once,
+                    TimerBehavior::Repeating => TimerMode::Repeating,
+                }
+            )
         }
     }
 

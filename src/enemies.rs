@@ -1,10 +1,8 @@
+
 use crate::health::Health;
 use crate::gamedata::*;
-use crate::guns::{
-    Gun, 
-    Guns, 
-};
-
+use crate::guns::{ GunConfigs, Guns };
+use crate::animations::{AnimationIndices, AnimationTimer, SpriteSheetConfig};
 use bevy::prelude::*;
 
 
@@ -13,40 +11,38 @@ pub struct Enemy;
 
 
 pub fn spawn(
-    //data: Res<GameData>,
+    gamedata: Res<GameData>,
     mut commands: Commands, 
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    let texture = asset_server.load("Tilemap/tilemap.png");
-    let layout = TextureAtlasLayout::from_grid(Vec2::new(16.0, 16.0), 12, 11, Some(Vec2::new(1.0, 1.0)), Some(Vec2::new(0.0, 0.0)));
-    let texture_atlas_layout = texture_atlases.add(layout);
-    let animation_indices = crate::player::AnimationIndices {first: 84, last: 88};
+    let gunconfigs_vec = GunConfigs::enemies();
+    let sheets = SpriteSheetConfig::enemies();
 
-    commands.spawn((
-        Enemy,
-        Health(100),
-        animation_indices,
-        Guns::new(vec![
-            Gun::default_rotate(EntityType::Player), 
-            Gun::default_snap(EntityType::Player), 
-            Gun::default_spiral(EntityType::Player)
-        ]),
-        crate::player::AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)
-        ),
-        SpriteSheetBundle {
-            texture,
-            atlas: TextureAtlas {
-                layout: texture_atlas_layout, 
-                index: 84 // cannot do animation indices.first because move, cannot do &animation_indices.first
+    for (gunconfigs, sheet) in gunconfigs_vec.into_iter().zip(sheets.into_iter()) {
+        let guns = Guns::from(gunconfigs);
+        commands.spawn((
+            Enemy,
+            Health(100),
+            guns,
+            AnimationIndices { first: sheet.first_animation_index, last: sheet.last_animation_index }, // from here to the end is the animation data
+            AnimationTimer(Timer::from_seconds(sheet.duration_s, TimerMode::Repeating)),
+            SpriteSheetBundle {
+                transform: Transform::from_scale(Vec3::splat(gamedata.player_size)), // hmmmm
+                texture: asset_server.load(sheet.path),
+                atlas: TextureAtlas { 
+                    index: sheet.first_animation_index,
+                    layout: texture_atlases.add(TextureAtlasLayout::from_grid(
+                        Vec2::new(sheet.width, sheet.height), 
+                        sheet.columns, 
+                        sheet.rows,
+                        Some(Vec2::new(sheet.padding_x, sheet.padding_y)), 
+                        None
+                    ))
+                },
+                ..default()
             },
-            transform: Transform {
-                translation: Vec3::new(100.0, 100.0, 0.0), 
-                rotation: Quat::default(), 
-                scale: Vec3::splat(3.0),
-            },
-            ..default()
-        }
-    ));
+        ));
+    }
 }
 

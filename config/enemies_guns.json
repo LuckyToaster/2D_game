@@ -1,0 +1,58 @@
+[
+    [
+        {
+            "pattern": "Snap",
+            "rotation": "Nan",
+            "timer_duration_millis": 200,
+            "timer_behavior": "Repeating",
+            "target": "Player",
+            "bullet_size": 5.0,
+            "bullet_vel": 175.0,
+            "bullet_damage": 2,
+            "bullet_color_r": 5.5,
+            "bullet_color_g": 1.0,
+            "bullet_color_b": 8.0
+        },
+        {
+            "pattern": "Spiral",
+            "rotation": "Identity",
+            "timer_duration_millis": 50,
+            "timer_behavior": "Repeating",
+            "target": "Player",
+            "bullet_size": 8.0,
+            "bullet_vel": 275.0,
+            "bullet_damage": 15,
+            "bullet_color_r": 7.0,
+            "bullet_color_g": 0.0,
+            "bullet_color_b": 7.0
+        }
+    ],
+    [
+        {
+            "pattern": "Spiral",
+            "rotation": "Identity",
+            "timer_duration_millis": 50,
+            "timer_behavior": "Repeating",
+            "target": "Player",
+            "bullet_size": 8.0,
+            "bullet_vel": 275.0,
+            "bullet_damage": 15,
+            "bullet_color_r": 7.0,
+            "bullet_color_g": 0.0,
+            "bullet_color_b": 7.0
+        },
+        {
+            "pattern": "Rotate",
+            "rotation": "Default",
+            "timer_duration_millis": 150,
+            "timer_behavior": "Repeating",
+            "target": "Player",
+            "bullet_size": 15.0,
+            "bullet_vel": 112.0,
+            "bullet_damage": 5,
+            "bullet_color_r": 1.5,
+            "bullet_color_g": 2.0,
+            "bullet_color_b": 3.0
+        }
+    ]
+]

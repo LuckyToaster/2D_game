@@ -7,7 +7,7 @@ mod bullets;
 mod health;
 mod player;
 mod enemies;
-mod spritesheets;
+mod animations;
 mod camera;
 mod guns;
 mod ui;
@@ -43,7 +43,7 @@ fn main() {
             (
                 //health::quit_on_player_death,
                 player::handle_movement,
-                player::animate, // change to animations::animate (for all entities with animation components or whatever)
+                animations::animate, // change to animations::animate (for all entities with animation components or whatever)
                 camera::follow_player,
                 health::handle,
                 (guns::enemy_guns, guns::player_guns, bullets::handle).after(health::handle),
