@@ -1,27 +1,66 @@
 [
     {
-        "path":"Tilemap/tilemap.png",
-        "width":16.0,
-        "height":16.0,
-        "columns":12,
-        "rows":11,
-        "first_animation_index":84,
-        "last_animation_index":88,
-        "padding_x":1.0,
-        "padding_y":1.0,
-        "duration_s":0.1
+        "path": "spritesheet.png",
+        "frame_width": 16.0,
+        "frame_height": 16.0,
+        "columns": 18,
+        "rows": 1,
+        "padding_x": 0.0,
+        "padding_y": 0.0,
+        "duration_s": 0.05,
+        "animations": {
+            "Prone": {
+                "first": 0,
+                "last": 0
+            },
+            "Moving": {
+                "first": 0,
+                "last": 11
+            },
+            "Hurt": {
+                "first": 16,
+                "last": 17
+            },
+            "TurningRight": {
+                "first": 14,
+                "last": 15
+            },
+            "TurningLeft": {
+                "first": 12,
+                "last": 13
+            }
+        }
     },
-
     {
-        "path":"Tilemap/tilemap.png",
-        "width":16.0,
-        "height":16.0,
-        "columns":12,
-        "rows":11,
-        "first_animation_index":84,
-        "last_animation_index":88,
-        "padding_x":1.0,
-        "padding_y":1.0,
-        "duration_s":0.1
+        "path": "spritesheet.png",
+        "frame_width": 16.0,
+        "frame_height": 16.0,
+        "columns": 18,
+        "rows": 1,
+        "padding_x": 0.0,
+        "padding_y": 0.0,
+        "duration_s": 0.05,
+        "animations": {
+            "Prone": {
+                "first": 0,
+                "last": 0
+            },
+            "Moving": {
+                "first": 0,
+                "last": 11
+            },
+            "Hurt": {
+                "first": 16,
+                "last": 17
+            },
+            "TurningRight": {
+                "first": 14,
+                "last": 15
+            },
+            "TurningLeft": {
+                "first": 12,
+                "last": 13
+            }
+        }
     }
 ]

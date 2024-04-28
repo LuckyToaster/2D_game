@@ -174,7 +174,7 @@ impl Gun {
             bullet_size: 2.0,
             bullet_vel: 450.0,
             bullet_damage: 5,
-            color: Color::rgb(0.0, 0.0, 50.0),
+            color: Color::rgb(10.0, 10.0, 10.0),
             rotation: Quat::default(), 
             target: EntityType::Enemy,
             timer: Timer::new(

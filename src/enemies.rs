@@ -1,7 +1,7 @@
 use crate::health::Health;
 use crate::gamedata::*;
 use crate::guns::{ GunConfigs, Guns };
-use crate::animations::{AnimationIndices, AnimationTimer, SpriteSheetConfig};
+use crate::animations::{ AnimationState, AnimationTimer, SpriteSheetConfig};
 use bevy::prelude::*;
 use serde::Deserialize;
 use std::fs::File;
@@ -48,23 +48,25 @@ pub fn spawn(
 
     for (gunconfigs, sheet, enemy) in izip!(gunconfigs_vec, sheets, enemies) {
         let guns = Guns::from(gunconfigs);
-        let mut t = Transform::from_scale(Vec3::splat(gamedata.player_size));
+        let mut t = Transform::from_scale(Vec3::splat(gamedata.player_size)); // turn this into one liner
         t.translation = Vec3::new(enemy.pos_x, enemy.pos_y, 0.0);
 
         commands.spawn((
             Enemy,
             Health(100),
             guns,
-            AnimationIndices { first: sheet.first_animation_index, last: sheet.last_animation_index }, // from here to the end is the animation data
+            // animations stuff: Animations, AnimationState, AnimationTimer, SpriteSheetBundle
+            sheet.animations.clone(),
+            AnimationState::Prone,
             AnimationTimer(Timer::from_seconds(sheet.duration_s, TimerMode::Repeating)),
             SpriteSheetBundle {
                 transform: t,
                 //Transform::from_scale(Vec3::splat(gamedata.player_size)), // hmmmm
                 texture: asset_server.load(sheet.path),
                 atlas: TextureAtlas { 
-                    index: sheet.first_animation_index,
+                    index: sheet.animations.0.get("Prone").unwrap().first,
                     layout: texture_atlases.add(TextureAtlasLayout::from_grid(
-                        Vec2::new(sheet.width, sheet.height), 
+                        Vec2::new(sheet.frame_width, sheet.frame_height), 
                         sheet.columns, 
                         sheet.rows,
                         Some(Vec2::new(sheet.padding_x, sheet.padding_y)), 
