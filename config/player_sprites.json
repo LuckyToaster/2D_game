@@ -6,11 +6,11 @@
     "rows": 1,
     "padding_x": 0.0,
     "padding_y": 0.0,
-    "duration_s": 0.05,
+    "duration_s": 0.1,
     "animations": {
         "Prone": {
             "first": 0,
-            "last": 0
+            "last": 1
         },
         "Moving": {
             "first": 0,

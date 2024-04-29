@@ -70,36 +70,43 @@ pub fn handle_movement(
         let forward = pt.rotation.mul_vec3(Vec3::new(0.0, 1.0, 0.0));
         let right = pt.rotation.mul_vec3(Vec3::new(1.0, 0.0, 0.0));
 
-        if k.pressed(KeyCode::KeyW) { 
-            direction += forward; 
-            *state = AnimationState::Moving;
-        }
+        let a_press = k.pressed(KeyCode::KeyA);
+        let w_press = k.pressed(KeyCode::KeyW);
+        let s_press = k.pressed(KeyCode::KeyS);
+        let d_press = k.pressed(KeyCode::KeyD);
+        let l_press = k.pressed(KeyCode::KeyL);
+        let quote_press = k.pressed(KeyCode::Quote);
 
-        if k.pressed(KeyCode::KeyA) { 
-            direction -= right; 
-            *state = AnimationState::Moving;
-        }
+        let a_rel = k.just_released(KeyCode::KeyA);
+        let w_rel = k.just_released(KeyCode::KeyW);
+        let s_rel = k.just_released(KeyCode::KeyS);
+        let d_rel = k.just_released(KeyCode::KeyD);
+        let l_rel = k.just_released(KeyCode::KeyL);
+        let quote_rel = k.just_released(KeyCode::Quote);
 
-        if k.pressed(KeyCode::KeyS) { 
-            direction -= forward; 
-            *state = AnimationState::Moving;
-        }
+        if w_press { direction += forward; } 
+        if a_press { direction -= right; } 
+        if s_press { direction -= forward; } 
+        if d_press { direction += right; } 
 
-        if k.pressed(KeyCode::KeyD) { 
-            direction += right; 
-            *state = AnimationState::Moving;
-        }
-
-        if k.pressed(KeyCode::KeyL) { 
+        if l_press { 
             rotation_factor += 1.0; 
             *state = AnimationState::TurningLeft;
-        }
+        } 
 
-        if k.pressed(KeyCode::Quote) { 
+        if quote_press { 
             rotation_factor -= 1.0; 
             *state = AnimationState::TurningRight;
+        } 
+
+        if w_rel || a_rel || s_rel || d_rel { 
+            *state = AnimationState::Prone; 
         }
 
+        if a_press || w_press || s_press || d_press {
+            *state = AnimationState::Moving;
+        }
+        
         if direction.length() > 0.0 { 
             direction = direction.normalize(); 
         }

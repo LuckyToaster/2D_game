@@ -75,7 +75,7 @@ pub fn animate(
                 AnimationState::TurningRight => indices = states.0.get("TurningRight").unwrap(),
             }
 
-            if atlas.index == indices.last {
+            if atlas.index >= indices.last {
                 atlas.index = indices.first;
             } else {
                 atlas.index += 1;
