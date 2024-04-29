@@ -6,7 +6,7 @@ use bevy::prelude::*;
 pub struct Health(pub i32);
 
 pub fn handle(mut commands: Commands, health_q: Query<(Entity, &Health)>) {
-    for (entity, health) in &health_q {
+    for (entity, health ) in &health_q {
         if health.0 <= 0 { 
             commands.entity(entity).despawn(); 
         }

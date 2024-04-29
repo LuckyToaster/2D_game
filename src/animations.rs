@@ -40,13 +40,44 @@ impl SpriteSheetConfig {
 #[derive(Component, Deserialize, Clone)]
 pub struct Animations(pub HashMap<String, AnimationIndices>); 
 
-#[derive(Component, Deserialize, Clone)]
-pub enum AnimationState {
+#[derive(Component, Deserialize, PartialEq, Clone, Copy)]
+pub enum Animation {
     Prone, 
     Moving, 
     TurningLeft, 
     TurningRight, 
-    Hurt
+    Hurt,
+}
+
+#[derive(Component)]
+pub struct AnimationState {
+    pub current: Animation,
+    pub has_changed: bool,
+}
+
+impl AnimationState {
+    pub fn new(current: Animation, has_changed: bool) -> AnimationState {
+        AnimationState { current, has_changed } 
+    }
+
+    pub fn change(&mut self, new: Animation) {
+        self.current = new;
+        self.has_changed = true;
+    }
+
+    pub fn isnot(&self, animation: Animation) -> bool {
+        self.current != animation
+    }
+    
+    pub fn is(&self, animation: Animation) -> bool {
+        self.current == animation
+    }
+
+    pub fn change_if_its_not(&mut self, new: Animation) {
+        if self.isnot(new) {
+            self.change(new);
+        }
+    }
 }
 
 #[derive(Component, Deref, DerefMut)]
@@ -59,27 +90,35 @@ pub struct AnimationIndices {
 }
 
 
+// use the timers cycle count to control how many iterations to do for an animation (like getting hurt)
 pub fn animate(
     time: Res<Time>,
-    mut query: Query<(&mut AnimationTimer, &mut TextureAtlas, &Animations, &AnimationState)>,
+    mut query: Query<(&mut AnimationTimer, &mut TextureAtlas, &Animations, &mut AnimationState)>,
 ) {
-    for (mut timer, mut atlas, states, state) in &mut query {
-        timer.tick(time.delta());
-        if timer.just_finished() {
-            let indices: &AnimationIndices;
-            match *state {
-                AnimationState::Hurt => indices = states.0.get("Hurt").unwrap(),
-                AnimationState::Moving => indices = states.0.get("Moving").unwrap(),
-                AnimationState::Prone => indices = states.0.get("Prone").unwrap(),
-                AnimationState::TurningLeft => indices = states.0.get("TurningLeft").unwrap(),
-                AnimationState::TurningRight => indices = states.0.get("TurningRight").unwrap(),
-            }
-
-            if atlas.index >= indices.last {
-                atlas.index = indices.first;
-            } else {
-                atlas.index += 1;
-            }
+    for (mut timer, mut atlas, states, mut state) in &mut query {
+        let indices: &AnimationIndices;
+        
+        match state.current {
+            Animation::Hurt => indices = states.0.get("Hurt").unwrap(),
+            Animation::Moving => indices = states.0.get("Moving").unwrap(),
+            Animation::Prone => indices = states.0.get("Prone").unwrap(),
+            Animation::TurningLeft => indices = states.0.get("TurningLeft").unwrap(),
+            Animation::TurningRight => indices = states.0.get("TurningRight").unwrap(),
         }
+
+        if state.has_changed { 
+            let duration = timer.duration();
+            timer.tick(duration); 
+            atlas.index = indices.first;
+        } else { 
+            timer.tick(time.delta()); 
+        }
+
+        if timer.finished() {
+            if atlas.index >= indices.last { atlas.index = indices.first; } 
+            else { atlas.index += 1; }
+        } 
+
+        state.has_changed = false;
     }
 }

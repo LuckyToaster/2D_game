@@ -1,3 +1,4 @@
+use crate::animations::{Animation, AnimationState};
 use crate::enemies::Enemy;
 use crate::player::Player;
 use crate::health::Health;
@@ -88,8 +89,8 @@ pub fn handle(
     data: Res<GameData>,
     mut commands: Commands,
     mut query: ParamSet<(
-        Query<(&Transform, &mut Health), With<Player>>, 
-        Query<(&Transform, &mut Health), With<Enemy>>
+        Query<(&Transform, &mut Health, &mut AnimationState), With<Player>>, 
+        Query<(&Transform, &mut Health, &mut AnimationState), With<Enemy>>
     )>,
     mut bullets: Query<
         (Entity, &mut Transform, &Bullet), 
@@ -115,21 +116,23 @@ pub fn handle(
         // collision detection
         match bullet.target {
             EntityType::Player => {
-                if let Ok((transform, mut health)) = query.p0().get_single_mut() {
+                if let Ok((transform, mut health, mut state)) = query.p0().get_single_mut() {
                     let distance = bt.translation.distance(transform.translation);
                     // in here, the size of the player and boss should be obtained from their
                     // transforms fuck, not the 'gamedata object' 
                     if distance <= bullet.size + transform.scale.x as f32 { // change to HitboxSize, or transform.scale waterfall from the 3d / 2d animations
                         health.0 -= bullet.damage;
+                        state.change_if_its_not(Animation::Hurt);
                         commands.entity(bullet_entity).despawn();
                     }
                 }
             },
             EntityType::Enemy => {
-                for (transform, mut health) in &mut query.p1() {
+                for (transform, mut health, mut state) in &mut query.p1() {
                     let distance = bt.translation.distance(transform.translation);
                     if distance <= bullet.size + transform.scale.x * data.scaling as f32 {
                         health.0 -= bullet.damage;
+                        state.change_if_its_not(Animation::Hurt);
                         commands.entity(bullet_entity).despawn();
                     }
                 }

@@ -43,7 +43,7 @@ fn main() {
             (
                 //health::quit_on_player_death,
                 player::handle_movement,
-                animations::animate,
+                animations::animate.after(player::handle_movement),
                 camera::follow_player,
                 health::handle,
                 (guns::enemy_guns, guns::player_guns, bullets::handle).after(health::handle),

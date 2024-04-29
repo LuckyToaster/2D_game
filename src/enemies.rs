@@ -1,7 +1,7 @@
 use crate::health::Health;
 use crate::gamedata::*;
 use crate::guns::{ GunConfigs, Guns };
-use crate::animations::{ AnimationState, AnimationTimer, SpriteSheetConfig};
+use crate::animations::{ Animation, AnimationState, AnimationTimer, SpriteSheetConfig};
 use bevy::prelude::*;
 use serde::Deserialize;
 use std::fs::File;
@@ -57,7 +57,7 @@ pub fn spawn(
             guns,
             // animations stuff: Animations, AnimationState, AnimationTimer, SpriteSheetBundle
             sheet.animations.clone(),
-            AnimationState::Prone,
+            AnimationState::new(Animation::Prone, false),
             AnimationTimer(Timer::from_seconds(sheet.duration_s, TimerMode::Repeating)),
             SpriteSheetBundle {
                 transform: t,
