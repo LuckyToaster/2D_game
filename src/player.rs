@@ -95,13 +95,7 @@ pub fn handle_movement(
         }
 
         let rotation = rotation_factor * gamedata.player_rotation_speed * time.delta_seconds();
-        //let mut rotation = gamedata.player_rotation_speed * time.delta_seconds();
-
-        //if quote_press { rotation *= -1.0; }
-        //if l_press { rotation *= 1.0; }
-
         pt.rotate_z(rotation);
-
         pt.translation += direction * gamedata.player_speed * time.delta_seconds();
     }
 }
