@@ -12,14 +12,6 @@ mod camera;
 mod guns;
 mod ui;
 
-/*
-    module layout:
-        COMPONENTS, RESOURCES, DATA STRUCTURES, then
-        SYSTEMS, then
-        IMPLEMENTATIONS, then
-        CONSTRUCTORS
- */
-
 
 fn main() {
     App::new()
@@ -41,7 +33,7 @@ fn main() {
         )
         .add_systems(Update,
             (
-                //health::quit_on_player_death,
+                health::quit_on_player_death,
                 player::handle_movement,
                 animations::animate.after(player::handle_movement),
                 camera::follow_player,

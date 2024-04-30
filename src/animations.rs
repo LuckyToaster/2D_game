@@ -40,7 +40,7 @@ impl SpriteSheetConfig {
 #[derive(Component, Deserialize, Clone)]
 pub struct Animations(pub HashMap<String, AnimationIndices>); 
 
-#[derive(Component, Deserialize, PartialEq, Clone, Copy)]
+#[derive(Component, PartialEq, Clone, Copy)]
 pub enum Animation {
     Prone, 
     Moving, 
@@ -59,23 +59,17 @@ impl AnimationState {
     pub fn new(current: Animation, has_changed: bool) -> AnimationState {
         AnimationState { current, has_changed } 
     }
-
-    pub fn change(&mut self, new: Animation) {
-        self.current = new;
-        self.has_changed = true;
-    }
-
-    pub fn isnot(&self, animation: Animation) -> bool {
-        self.current != animation
-    }
     
+    #[inline]
     pub fn is(&self, animation: Animation) -> bool {
         self.current == animation
     }
 
+    #[inline]
     pub fn change_if_its_not(&mut self, new: Animation) {
-        if self.isnot(new) {
-            self.change(new);
+        if self.current != new {
+            self.current = new;
+            self.has_changed = true;
         }
     }
 }
@@ -90,14 +84,13 @@ pub struct AnimationIndices {
 }
 
 
-// use the timers cycle count to control how many iterations to do for an animation (like getting hurt)
 pub fn animate(
     time: Res<Time>,
     mut query: Query<(&mut AnimationTimer, &mut TextureAtlas, &Animations, &mut AnimationState)>,
 ) {
     for (mut timer, mut atlas, states, mut state) in &mut query {
         let indices: &AnimationIndices;
-        
+
         match state.current {
             Animation::Hurt => indices = states.0.get("Hurt").unwrap(),
             Animation::Moving => indices = states.0.get("Moving").unwrap(),
@@ -115,8 +108,11 @@ pub fn animate(
         }
 
         if timer.finished() {
-            if atlas.index >= indices.last { atlas.index = indices.first; } 
-            else { atlas.index += 1; }
+            if atlas.index >= indices.last { 
+                atlas.index = indices.first; 
+            } else { 
+                atlas.index += 1; 
+            }
         } 
 
         state.has_changed = false;

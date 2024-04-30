@@ -62,8 +62,9 @@ pub enum AimPattern {
     Rotate, Snap, Spiral, PlayerInput 
 }
 
-impl AimPattern {       //also shoots a player gun if gun is PlayerInput, not great having that there 
-    #[inline]           // means this is used within a system
+impl AimPattern {       
+    //also shoots at player gun if gun is PlayerInput, not great having that there 
+    #[inline]           
     fn rotate_gun(
         gun: &mut Gun,
         shooter: &Transform,
