@@ -1,32 +1,32 @@
 {
-    "path": "spritesheet.png",
-    "frame_width": 16.0,
-    "frame_height": 16.0,
-    "columns": 20,
+    "path": "dog_spritesheet.png",
+    "frame_width": 48.0,
+    "frame_height": 48.0,
+    "columns": 42,
     "rows": 1,
     "padding_x": 0.0,
     "padding_y": 0.0,
     "duration_s": 0.1,
     "animations": {
         "Prone": {
-            "first": 18,
-            "last": 19
+            "first": 0,
+            "last": 4
         },
         "Moving": {
-            "first": 0,
-            "last": 11
+            "first": 24,
+            "last": 29
         },
         "Hurt": {
-            "first": 16,
-            "last": 17
+            "first": 3,
+            "last": 3
         },
         "TurningRight": {
-            "first": 14,
-            "last": 15
+            "first": 24,
+            "last": 29
         },
         "TurningLeft": {
-            "first": 12,
-            "last": 13
+            "first": 24,
+            "last": 29
         }
     }
 }
