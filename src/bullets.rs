@@ -1,4 +1,4 @@
-use crate::animations::{Animation, AnimationState};
+use crate::animations::{TopDownStates, AnimationState};
 use crate::enemies::Enemy;
 use crate::player::Player;
 use crate::health::Health;
@@ -122,7 +122,7 @@ pub fn handle(
                     // transforms fuck, not the 'gamedata object' 
                     if distance <= bullet.size + transform.scale.x as f32 { // change to HitboxSize, or transform.scale waterfall from the 3d / 2d animations
                         health.0 -= bullet.damage;
-                        state.change_if_its_not(Animation::Hurt);
+                        state.change_if_its_not(TopDownStates::Hurt);
                         commands.entity(bullet_entity).despawn();
                     }
                 }
@@ -132,7 +132,7 @@ pub fn handle(
                     let distance = bt.translation.distance(transform.translation);
                     if distance <= bullet.size + transform.scale.x * data.scaling as f32 {
                         health.0 -= bullet.damage;
-                        state.change_if_its_not(Animation::Hurt);
+                        state.change_if_its_not(TopDownStates::Hurt);
                         commands.entity(bullet_entity).despawn();
                     }
                 }

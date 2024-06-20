@@ -1,12 +1,18 @@
-use bevy::{
-    ecs::{ component::Component, system::{ Query, Res } },
-    prelude::{Deref, DerefMut},
-    sprite::TextureAtlas,
-    time::{Time, Timer},
-};
 use serde::Deserialize;
-use std::{collections::HashMap, fs::File};
-use std::io::BufReader;
+use bevy::{
+    prelude::{Deref, DerefMut}, 
+    sprite::TextureAtlas, 
+    time::{Time, Timer},
+    ecs::{ 
+        component::Component, 
+        system::{ Query, Res } 
+    }, 
+};
+use std::{
+    io::BufReader,
+    collections::HashMap, 
+    fs::File
+};
 
 // TODO: Use the TypeState design pattern to define behaviour for different types of spritesheets passed through the config
 //
@@ -26,25 +32,35 @@ pub struct SpriteSheetConfig {
 }
 
 impl SpriteSheetConfig {
-    pub fn player() -> Self {
-        let reader = BufReader::new(File::open("config/player_sprites.json").unwrap());
-        let sheet: SpriteSheetConfig = serde_json::from_reader(reader).unwrap();
+
+    pub fn new(json_path: &str) -> Self {
+        let reader = BufReader::new(File::open(json_path).unwrap());
+        let sheet = serde_json::from_reader(reader).unwrap();
         sheet
     }
 
-    pub fn enemies() -> Vec<SpriteSheetConfig> {
-        let reader = BufReader::new(File::open("config/enemy_sprites.json").unwrap());
+    pub fn new_vec(json_path: &str) -> Vec<SpriteSheetConfig> {
+        let reader = BufReader::new(File::open(json_path).unwrap());
         let sheets: Vec<SpriteSheetConfig> = serde_json::from_reader(reader).unwrap();
         sheets
+    }
+
+    pub fn player() -> Self {
+        SpriteSheetConfig::new("config/player_sprites.json")
+    }
+
+    pub fn enemies() -> Vec<SpriteSheetConfig> {
+        SpriteSheetConfig::new_vec("config/enemy_sprites.json")
     }
 }
 
 
-#[derive(Component, Deserialize, Clone)]
-pub struct Animations(pub HashMap<String, AnimationIndices>); 
+// honestly get rid of this and put directly in AnimationComponent
+#[derive(Component, Deserialize, Deref, DerefMut, Clone)]
+pub struct Animations(pub HashMap<String, Indices>); 
 
 #[derive(Component, PartialEq, Clone, Copy)]
-pub enum Animation {
+pub enum TopDownStates {
     Prone, 
     Moving, 
     TurningLeft, 
@@ -52,24 +68,31 @@ pub enum Animation {
     Hurt,
 }
 
+/* 
+#[derive(Component, PartialEq, Clone, Copy)]
+pub enum IsometricStates {
+    Prone, Moving, NE, NW, SE, SW, North, South, East, West
+}
+*/
+
 #[derive(Component)]
 pub struct AnimationState {
-    pub current: Animation,
+    pub current: TopDownStates, // honestly change this to be a &str, allows more flexibility in making different animations
     pub has_changed: bool,
 }
 
 impl AnimationState {
-    pub fn new(current: Animation, has_changed: bool) -> AnimationState {
+    pub fn new(current: TopDownStates, has_changed: bool) -> AnimationState {
         AnimationState { current, has_changed } 
     }
     
     #[inline]
-    pub fn is(&self, animation: Animation) -> bool {
+    pub fn is(&self, animation: TopDownStates) -> bool {
         self.current == animation
     }
 
     #[inline]
-    pub fn change_if_its_not(&mut self, new: Animation) {
+    pub fn change_if_its_not(&mut self, new: TopDownStates) {
         if self.current != new {
             self.current = new;
             self.has_changed = true;
@@ -77,30 +100,29 @@ impl AnimationState {
     }
 }
 
-#[derive(Component, Deref, DerefMut)]
+// wtf is deref and derefmut
+#[derive(Component, Deref, DerefMut, Clone)]
 pub struct AnimationTimer(pub Timer);
 
 #[derive(Component, Deserialize, Clone)]
-pub struct AnimationIndices {
+pub struct Indices {
     pub first: usize,
     pub last: usize,
 }
-
 
 pub fn animate(
     time: Res<Time>,
     mut query: Query<(&mut AnimationTimer, &mut TextureAtlas, &Animations, &mut AnimationState)>,
 ) {
     for (mut timer, mut atlas, states, mut state) in &mut query {
-        let indices: &AnimationIndices;
 
-        match state.current {
-            Animation::Hurt => indices = states.0.get("Hurt").unwrap(),
-            Animation::Moving => indices = states.0.get("Moving").unwrap(),
-            Animation::Prone => indices = states.0.get("Prone").unwrap(),
-            Animation::TurningLeft => indices = states.0.get("TurningLeft").unwrap(),
-            Animation::TurningRight => indices = states.0.get("TurningRight").unwrap(),
-        }
+        let indices = match state.current {
+            TopDownStates::Hurt => states.0.get("Hurt").unwrap(),
+            TopDownStates::Moving => states.0.get("Moving").unwrap(),
+            TopDownStates::Prone => states.0.get("Prone").unwrap(),
+            TopDownStates::TurningLeft => states.0.get("TurningLeft").unwrap(),
+            TopDownStates::TurningRight => states.0.get("TurningRight").unwrap(),
+        };
 
         if state.has_changed { 
             let duration = timer.duration();

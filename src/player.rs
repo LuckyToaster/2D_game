@@ -1,6 +1,6 @@
 use crate::health::Health;
 use crate::gamedata::GameData;
-use crate::animations::{Animation, AnimationState, AnimationTimer, SpriteSheetConfig};
+use crate::animations::{TopDownStates, AnimationState, AnimationTimer, SpriteSheetConfig};
 use crate::guns::{
     Guns, 
     Gun
@@ -37,7 +37,7 @@ pub fn spawn(
         Guns::new(vec![Gun::player_gun()]),
         // sprites / animation stuff
         sheet.animations.clone(), 
-        AnimationState::new(Animation::Prone, false),
+        AnimationState::new(TopDownStates::Prone, false),
         AnimationTimer(Timer::from_seconds(sheet.duration_s, TimerMode::Repeating)),
         SpriteSheetBundle {
             transform: Transform::from_scale(Vec3::splat(gamedata.player_size)),
@@ -85,10 +85,10 @@ pub fn handle_movement(
         if quote_press { rotation_factor -= 1.0; }
         if l_press { rotation_factor += 1.0; }
 
-        if quote_press { state.change_if_its_not(Animation::TurningRight); } 
-        else if l_press { state.change_if_its_not(Animation::TurningLeft); } 
-        else if awsd_press { state.change_if_its_not(Animation::Moving); } 
-        else { state.change_if_its_not(Animation::Prone); } 
+        if quote_press { state.change_if_its_not(TopDownStates::TurningRight); } 
+        else if l_press { state.change_if_its_not(TopDownStates::TurningLeft); } 
+        else if awsd_press { state.change_if_its_not(TopDownStates::Moving); } 
+        else { state.change_if_its_not(TopDownStates::Prone); } 
 
         if direction.length() > 0.0 { 
             direction = direction.normalize(); 
