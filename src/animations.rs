@@ -8,6 +8,9 @@ use serde::Deserialize;
 use std::{collections::HashMap, fs::File};
 use std::io::BufReader;
 
+// TODO: Use the TypeState design pattern to define behaviour for different types of spritesheets passed through the config
+//
+// maybe implement astortion animations? --> would be cool
 
 #[derive(Deserialize, Clone, Component)]
 pub struct SpriteSheetConfig {

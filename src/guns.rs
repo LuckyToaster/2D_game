@@ -172,14 +172,14 @@ impl Gun {
     pub fn player_gun() -> Self {
         Gun { 
             pattern: AimPattern::PlayerInput,
-            bullet_size: 2.0,
-            bullet_vel: 450.0,
-            bullet_damage: 5,
+            bullet_size: 1.0,
+            bullet_vel: 1000.0,
+            bullet_damage: 50,
             color: Color::rgb(10.0, 10.0, 10.0),
             rotation: Quat::default(), 
             target: EntityType::Enemy,
             timer: Timer::new(
-                Duration::from_millis(100),
+                Duration::from_millis(200),
                 TimerMode::Once
             )
         }
